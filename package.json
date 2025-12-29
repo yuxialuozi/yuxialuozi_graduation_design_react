@@ -1,22 +1,41 @@
 {
   "name": "yuxialuozi_graduation_design",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,tsx,less}\""
   },
   "devDependencies": {
+    "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "@vitejs/plugin-react": "^5.1.2",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.26",
+    "less": "^4.5.1",
+    "prettier": "^3.7.4",
     "typescript": "~5.9.3",
     "vite": "^7.2.4"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.6.1",
+    "antd": "^5.29.3",
+    "axios": "^1.13.2",
+    "classnames": "^2.5.1",
+    "dayjs": "^1.11.19",
+    "echarts": "^5.6.0",
+    "echarts-for-react": "^3.0.5",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "react-router-dom": "^6.30.2",
+    "zustand": "^4.5.7"
   }
 }
