@@ -4,7 +4,12 @@
       "Bash(npm run build)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 初始化 React + TypeScript 项目\n\n- 添加 React 18 和 React DOM 依赖\n- 配置 @vitejs/plugin-react 插件\n- 更新 tsconfig.json 支持 JSX\n- 创建 React 入口文件和 App 组件\n- 添加基础样式文件\n- 移除原有的 Vanilla TypeScript 模板文件\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm run:*)",
+      "Bash(curl:*)",
+      "Bash(go build:*)",
+      "Bash(__NEW_LINE_fdfc909d57715c54__ echo:*)"
     ]
   }
 }

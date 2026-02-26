@@ -1,54 +1,51 @@
-import { useState } from 'react'
-import { Table, Card, Button, Space, Input, Tag, Modal, Form, DatePicker, InputNumber, message } from 'antd'
+import { useState, useEffect } from 'react'
+import { Table, Card, Button, Space, Input, Tag, Modal, Form, DatePicker, InputNumber, Select, message } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import type { Contract } from '@/types'
 import { formatMoney } from '@/utils'
+import { getContractList, createContract, updateContract, deleteContract, type ContractFormData, type ContractQueryParams } from '@/api'
+import dayjs from 'dayjs'
+import './index.less'
 
 const ContractList = () => {
-  const [loading] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const [searchStatus, setSearchStatus] = useState('')
+  const [startDateFrom, setStartDateFrom] = useState('')
+  const [startDateTo, setStartDateTo] = useState('')
+  const [data, setData] = useState<Contract[]>([])
+  const [total, setTotal] = useState(0)
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 })
   const [form] = Form.useForm()
 
-  // 模拟数据
-  const mockData: Contract[] = [
-    {
-      id: 1,
-      tenantId: 1,
-      tenantName: '张三',
-      contractNo: 'HT2024001',
-      startDate: '2024-01-01',
-      endDate: '2024-12-31',
-      amount: 36000,
-      status: 'active',
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-01',
-    },
-    {
-      id: 2,
-      tenantId: 2,
-      tenantName: '李四',
-      contractNo: 'HT2024002',
-      startDate: '2024-02-01',
-      endDate: '2025-01-31',
-      amount: 48000,
-      status: 'active',
-      createdAt: '2024-02-01',
-      updatedAt: '2024-02-01',
-    },
-    {
-      id: 3,
-      tenantId: 3,
-      tenantName: '王五',
-      contractNo: 'HT2023010',
-      startDate: '2023-06-01',
-      endDate: '2024-05-31',
-      amount: 42000,
-      status: 'expired',
-      createdAt: '2023-06-01',
-      updatedAt: '2024-06-01',
-    },
-  ]
+  useEffect(() => {
+    fetchData()
+  }, [pagination.current, pagination.pageSize, searchKeyword, searchStatus, startDateFrom, startDateTo])
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      const params: ContractQueryParams = {
+        page: pagination.current,
+        pageSize: pagination.pageSize,
+      }
+      if (searchKeyword) params.keyword = searchKeyword
+      if (searchStatus) params.status = searchStatus
+      if (startDateFrom) params.startDateFrom = startDateFrom
+      if (startDateTo) params.startDateTo = startDateTo
+
+      const result = await getContractList(params)
+      setData(result.list)
+      setTotal(result.total)
+    } catch (error) {
+      message.error('获取合同列表失败')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const statusMap = {
     draft: { text: '草稿', color: 'default' },
@@ -96,12 +93,18 @@ const ContractList = () => {
   ]
 
   const handleAdd = () => {
+    setEditingId(null)
     form.resetFields()
     setModalVisible(true)
   }
 
   const handleEdit = (record: Contract) => {
-    form.setFieldsValue(record)
+    setEditingId(record.id)
+    form.setFieldsValue({
+      ...record,
+      dateRange: [dayjs(record.startDate), dayjs(record.endDate)],
+      tenantName: record.tenantName,
+    })
     setModalVisible(true)
   }
 
@@ -109,17 +112,59 @@ const ContractList = () => {
     Modal.confirm({
       title: '确认删除',
       content: `确定要删除合同 "${record.contractNo}" 吗？`,
-      onOk: () => {
-        message.success('删除成功')
+      onOk: async () => {
+        try {
+          await deleteContract(record.id)
+          message.success('删除成功')
+          fetchData()
+        } catch (error) {
+          message.error('删除失败')
+        }
       },
     })
   }
 
   const handleModalOk = () => {
-    form.validateFields().then((values) => {
-      console.log('表单数据:', values)
-      message.success('保存成功')
-      setModalVisible(false)
+    form.validateFields().then(async (values) => {
+      try {
+        setLoading(true)
+        const { dateRange, tenantName, ...rest } = values
+        const formData: ContractFormData = {
+          ...rest,
+          tenantId: values.tenantId || 1, // 这里应该从 tenantName 查找对应的 tenantId
+          startDate: dateRange[0].format('YYYY-MM-DD'),
+          endDate: dateRange[1].format('YYYY-MM-DD'),
+        }
+
+        if (editingId) {
+          await updateContract(editingId, formData)
+          message.success('更新成功')
+        } else {
+          await createContract(formData)
+          message.success('创建成功')
+        }
+
+        setModalVisible(false)
+        form.resetFields()
+        setEditingId(null)
+        fetchData()
+      } catch (error) {
+        message.error(editingId ? '更新失败' : '创建失败')
+      } finally {
+        setLoading(false)
+      }
+    })
+  }
+
+  const handleSearch = (value: string) => {
+    setSearchKeyword(value)
+    setPagination({ ...pagination, current: 1 })
+  }
+
+  const handleTableChange = (pag: any) => {
+    setPagination({
+      current: pag.current,
+      pageSize: pag.pageSize,
     })
   }
 
@@ -133,6 +178,7 @@ const ContractList = () => {
             allowClear
             style={{ width: 200 }}
             prefix={<SearchOutlined />}
+            onSearch={handleSearch}
           />
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
             新增合同
@@ -142,10 +188,18 @@ const ContractList = () => {
     >
       <Table
         columns={columns}
-        dataSource={mockData}
+        dataSource={data}
         rowKey="id"
         loading={loading}
-        pagination={{ pageSize: 10, showTotal: (total) => `共 ${total} 条` }}
+        onChange={handleTableChange}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total,
+          showTotal: (totalCount) => `共 ${totalCount} 条`,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50'],
+        }}
       />
 
       <Modal
@@ -164,11 +218,11 @@ const ContractList = () => {
             <Input placeholder="请输入合同编号" />
           </Form.Item>
           <Form.Item
-            name="tenantName"
-            label="租户名称"
-            rules={[{ required: true, message: '请选择租户' }]}
+            name="tenantId"
+            label="租户ID"
+            rules={[{ required: true, message: '请输入租户ID' }]}
           >
-            <Input placeholder="请选择租户" />
+            <Input placeholder="请输入租户ID" />
           </Form.Item>
           <Form.Item
             name="dateRange"
@@ -188,6 +242,14 @@ const ContractList = () => {
               prefix="¥"
               min={0}
             />
+          </Form.Item>
+          <Form.Item name="status" label="状态">
+            <Select placeholder="请选择状态">
+              <Select.Option value="draft">草稿</Select.Option>
+              <Select.Option value="active">生效中</Select.Option>
+              <Select.Option value="expired">已到期</Select.Option>
+              <Select.Option value="terminated">已终止</Select.Option>
+            </Select>
           </Form.Item>
         </Form>
       </Modal>

@@ -17,10 +17,14 @@ request.interceptors.request.use(
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    } else {
+      console.log('没有找到token，跳过Authorization头设置')
     }
+    console.log('请求配置:', config.method, config.url, config.headers.Authorization ? '带token' : '无token')
     return config
   },
   (error) => {
+    console.error('请求拦截器错误:', error)
     return Promise.reject(error)
   }
 )
@@ -29,7 +33,7 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => {
     const { data } = response
-    if (data.code === 200) {
+    if (data.code === 0) {
       return response
     }
     message.error(data.message || '请求失败')

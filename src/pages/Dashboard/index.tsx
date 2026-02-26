@@ -1,79 +1,112 @@
+import { useState, useEffect } from 'react'
 import { Row, Col, Card, Statistic } from 'antd'
 import { UserOutlined, FileTextOutlined, HomeOutlined, DollarOutlined } from '@ant-design/icons'
 import ReactECharts from 'echarts-for-react'
+import { getDashboard } from '@/api'
+import { formatMoney } from '@/utils'
 import './index.less'
 
 const Dashboard = () => {
-  // 统计数据
-  const statistics = [
+  const [loading, setLoading] = useState(false)
+  const [dashboardData, setDashboardData] = useState<any>(null)
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true)
+      const data = await getDashboard()
+      setDashboardData(data)
+    } catch (error) {
+      console.error('获取仪表盘数据失败', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 如果没有数据，使用默认值
+  const stats = dashboardData ? [
+    { title: '租户总数', value: dashboardData.totalTenants, icon: <UserOutlined />, color: '#1890ff' },
+    { title: '合同数量', value: dashboardData.activeContracts, icon: <FileTextOutlined />, color: '#52c41a' },
+    { title: '房间总数', value: dashboardData.totalRooms, icon: <HomeOutlined />, color: '#faad14' },
+    { title: '本月收入', value: dashboardData.monthlyIncome || 0, icon: <DollarOutlined />, color: '#f5222d', prefix: '¥' },
+  ] : [
     { title: '租户总数', value: 128, icon: <UserOutlined />, color: '#1890ff' },
     { title: '合同数量', value: 95, icon: <FileTextOutlined />, color: '#52c41a' },
     { title: '房间总数', value: 256, icon: <HomeOutlined />, color: '#faad14' },
     { title: '本月收入', value: 125600, icon: <DollarOutlined />, color: '#f5222d', prefix: '¥' },
   ]
 
-  // 租户增长趋势图配置
-  const tenantTrendOption = {
-    title: { text: '租户增长趋势', left: 'center' },
+  const incomeChartData = dashboardData?.incomeChart || []
+  const maintenanceStatusData = dashboardData?.maintenanceStatusChart || []
+  const feeTypeData = dashboardData?.feeTypeChart || []
+
+  // 收入趋势图配置
+  const incomeTrendOption: any = {
+    title: { text: '收入趋势', left: 'center' },
     tooltip: { trigger: 'axis' },
-    xAxis: {
+   xAxis: {
       type: 'category',
-      data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+      data: incomeChartData.length > 0 ? incomeChartData.map((item: any) => item.date) : [''],
     },
-    yAxis: { type: 'value' },
+    yAxis: { type: 'value', name: '金额' },
     series: [
       {
-        name: '新增租户',
+        name: '收入',
         type: 'line',
         smooth: true,
-        data: [12, 19, 15, 25, 22, 30],
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0, y: 0, x2: 0, y2: 1,
-            colorStops: [
-              { offset: 0, color: 'rgba(24, 144, 255, 0.3)' },
-              { offset: 1, color: 'rgba(24, 144, 255, 0.05)' },
-            ],
+        data: incomeChartData.length > 0 ? incomeChartData.map((item: any) => item.amount) : [0],
+        itemStyle: { color: '#1890ff' },
+        lineStyle: { width: 2 },
+      },
+    ],
+  }
+
+  // 维修工单状态分布图配置
+  const maintenanceStatusOption: any = {
+    title: { text: '维修工单状态分布', left: 'center' },
+    tooltip: { trigger: 'item' },
+    legend: { top: 'bottom' },
+    series: [
+      {
+        name: '工单状态',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        data: maintenanceStatusData.length > 0 ? maintenanceStatusData.map((item: any) => ({
+          value: item.count,
+          name: item.status,
+        })) : [{ value: 0, name: '暂无数据' }],
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)',
           },
+        },
+        label: {
+          formatter: '{b}: {c} ({d}%)',
         },
       },
     ],
   }
 
-  // 收入统计图配置
-  const incomeOption = {
-    title: { text: '月度收入统计', left: 'center' },
-    tooltip: { trigger: 'axis' },
+  // 费用类型分布图配置
+  const feeTypeOption: any = {
+    title: { text: '费用类型分布', left: 'center' },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
     xAxis: {
       type: 'category',
-      data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+      data: feeTypeData.length > 0 ? feeTypeData.map((item: any) => item.feeType) : [''],
     },
-    yAxis: { type: 'value', axisLabel: { formatter: '¥{value}' } },
+    yAxis: { type: 'value', name: '金额' },
     series: [
       {
-        name: '收入',
+        name: '费用金额',
         type: 'bar',
-        data: [98000, 102000, 115000, 108000, 120000, 125600],
-        itemStyle: { color: '#52c41a' },
-      },
-    ],
-  }
-
-  // 房间使用率饼图
-  const roomUsageOption = {
-    title: { text: '房间使用情况', left: 'center' },
-    tooltip: { trigger: 'item' },
-    legend: { bottom: 10 },
-    series: [
-      {
-        type: 'pie',
-        radius: ['40%', '70%'],
-        data: [
-          { value: 180, name: '已出租', itemStyle: { color: '#52c41a' } },
-          { value: 56, name: '空置', itemStyle: { color: '#faad14' } },
-          { value: 20, name: '维修中', itemStyle: { color: '#f5222d' } },
-        ],
+        data: feeTypeData.length > 0 ? feeTypeData.map((item: any) => item.amount) : [0],
+        itemStyle: { color: '#1890ff' },
       },
     ],
   }
@@ -81,16 +114,20 @@ const Dashboard = () => {
   return (
     <div className="dashboard">
       <Row gutter={[16, 16]}>
-        {statistics.map((item, index) => (
-          <Col xs={24} sm={12} lg={6} key={index}>
-            <Card className="stat-card">
-              <div className="stat-icon" style={{ backgroundColor: item.color }}>
-                {item.icon}
-              </div>
+        {stats.map((stat, index) => (
+          <Col xs={24} sm={12} md={6} key={index}>
+            <Card bordered={false}>
               <Statistic
-                title={item.title}
-                value={item.value}
-                prefix={item.prefix}
+                title={stat.title}
+                value={stat.value}
+                prefix={stat.prefix || stat.icon}
+                valueStyle={{ color: stat.color }}
+                formatter={(value) => {
+                  if (stat.prefix === '¥') {
+                    return formatMoney(Number(value))
+                  }
+                  return value
+                }}
               />
             </Card>
           </Col>
@@ -98,32 +135,22 @@ const Dashboard = () => {
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        <Col xs={24} lg={12}>
-          <Card>
-            <ReactECharts option={tenantTrendOption} style={{ height: 300 }} />
-          </Card>
-        </Col>
-        <Col xs={24} lg={12}>
-          <Card>
-            <ReactECharts option={incomeOption} style={{ height: 300 }} />
+        <Col xs={24} lg={24}>
+          <Card title="收入趋势" loading={loading} bordered={false}>
+            <ReactECharts option={incomeTrendOption} style={{ height: 300 }} />
           </Card>
         </Col>
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} lg={12}>
-          <Card>
-            <ReactECharts option={roomUsageOption} style={{ height: 300 }} />
+          <Card title="维修工单状态分布" loading={loading} bordered={false}>
+            <ReactECharts option={maintenanceStatusOption} style={{ height: 300 }} />
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="待办事项">
-            <ul className="todo-list">
-              <li>3 份合同即将到期</li>
-              <li>5 条维修工单待处理</li>
-              <li>2 位租户费用待缴纳</li>
-              <li>本月账单待生成</li>
-            </ul>
+          <Card title="费用类型分布" loading={loading} bordered={false}>
+            <ReactECharts option={feeTypeOption} style={{ height: 300 }} />
           </Card>
         </Col>
       </Row>

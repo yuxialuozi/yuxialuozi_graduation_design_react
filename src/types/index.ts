@@ -17,7 +17,8 @@ export interface LoginParams {
 // 登录响应
 export interface LoginResult {
   token: string
-  userInfo: UserInfo
+  user?: UserInfo  // 后端返回的是 user 字段
+  userInfo?: UserInfo  // 兼容性字段，优先使用 user
 }
 
 // API 响应基础类型

@@ -1,0 +1,69 @@
+// 房间列表页面样式
+.room-list {
+
+  .ant-table {
+    .ant-table-tbody {
+      .ant-table-row {
+        cursor: pointer;
+
+        &:hover {
+          background-color: #f5f5f5;
+        }
+      }
+    }
+  }
+
+  .ant-modal {
+    .ant-modal-body {
+      .ant-form {
+        margin-top: 20px;
+      }
+    }
+  }
+
+  .status-tag {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+
+    &.vacant {
+      background-color: #f6ffed;
+      color: #52c41a;
+      border: 1px solid #b7eb8f;
+    }
+
+    &.occupied {
+      background-color: #fff7e6;
+      color: #faad14;
+      border: 1px solid #ffe58f;
+    }
+
+    &.maintenance {
+      background-color: #fff2f0;
+      color: #ff4d4f;
+      border: 1px solid #ffccc7;
+    }
+  }
+
+  .room-info {
+    .building {
+      font-weight: 500;
+      color: #1890ff;
+    }
+
+    .floor {
+      color: #666;
+      margin-left: 8px;
+    }
+
+    .rent-amount {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-weight: 500;
+      color: #ff4d4f;
+    }
+  }
+
+  .assign-button {
+    margin-left: 8px;
+  }
+}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API接口测试工具</title>
+</head>
+<body>
+    <h1>租户管理系统API测试工具</h1>
+
+    <div>
+        <h2>1. 测试登录</h2>
+        <button onclick="testLogin()">登录测试</button>
+        <div id="loginResult"></div>
+        <div id="tokenInfo"></div>
+    </div>
+
+    <div>
+        <h2>2. 测试Dashboard</h2>
+        <input type="text" id="tokenInput" placeholder="粘贴token" style="width: 400px;">
+        <button onclick="testDashboard()">测试Dashboard API</button>
+        <div id="dashboardResult"></div>
+    </div>
+
+    <div>
+        <h2>3. 本地Storage测试</h2>
+        <button onclick="checkLocalStore()">检查localStorage</button>
+        <button onclick="clearLocalStore()">清除localStorage</button>
+        <button onclick="setToken()">设置Token</button>
+        <div id="storageResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: '123456'
+                    })
+                });
+
+                const result = await response.json();
+                document.getElementById('loginResult').innerHTML = `
+                    <pre><strong>登录响应：</strong>
+${JSON.stringify(result, null, 2)}</pre>
+                `;
+
+                if (result.code === 0 && result.data && result.data.token) {
+                    const token = result.data.token;
+                    document.getElementById('tokenInput').value = token;
+                    document.getElementById('tokenInfo').innerHTML = `
+                        <p><strong>Token获取成功：</strong></p>
+                        <p><strong>长度：</strong>${token.length}</p>
+                        <p><strong>前20位：</strong>${token.substring(0, 20)}...</p>
+                        <p><strong>后20位：</strong>...${token.substring(token.length - 20)}</p>
+                        <p><strong>用户信息：</strong>${JSON.stringify(result.data.userInfo)}</p>
+                    `;
+
+                    // 自动保存到localStorage
+                    localStorage.setItem('token', token);
+                    console.log('Token已保存到localStorage');
+                } else {
+                    document.getElementById('tokenInfo').innerHTML = '<p style="color:red;">登录失败：未获取到token</p>';
+                }
+            } catch (error) {
+                document.getElementById('loginResult').innerHTML = `<p style="color:red;">请求失败：${error.message}</p>`;
+            }
+        }
+
+        async function testDashboard() {
+            const token = document.getElementById('tokenInput').value;
+            if (!token) {
+                alert('请先登录或输入token');
+                return;
+            }
+
+            try {
+                console.log('请求Dashboard API，token长度:', token.length);
+                console.log('Authorization头:', `Bearer ${token.substring(0, 20)}...`);
+
+                const response = await fetch(`${API_BASE}/reports/dashboard`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                document.getElementById('dashboardResult').innerHTML = `
+                    <pre><strong>状态码：</strong>${response.status}
+<strong>响应数据：</strong>
+${JSON.stringify(result, null, 2)}</pre>
+                `;
+
+                if (response.status === 401) {
+                    document.getElementById('dashboardResult').innerHTML += `<p style="color:red;">❌ 认证失败！</p>`;
+                } else if (response.status === 200) {
+                    document.getElementById('dashboardResult').innerHTML += `<p style="color:green;">✅ 认证成功！</p>`;
+                }
+            } catch (error) {
+                document.getElementById('dashboardResult').innerHTML = `<p style="color:red;">请求失败：${error.message}</p>`;
+            }
+        }
+
+        function checkLocalStore() {
+            const token = localStorage.getItem('token');
+            const userInfo = localStorage.getItem('user-storage');
+            document.getElementById('storageResult').innerHTML = `
+                <p><strong>localStorage中的token：</strong></p>
+                <p>${token ?
+                    `${token.length}字符: ${token.substring(0, 50)}...` :
+                    'null (没有token)'}</p>
+                <p><strong>用户配置存储：</strong></p>
+                <p>${userInfo ? userInfo.substring(0, 100) + '...' : 'null'}</p>
+            `;
+        }
+
+        function clearLocalStore() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user-storage');
+            document.getElementById('storageResult').innerHTML = `<p>localStorage已清除</p>`;
+        }
+
+        function setToken() {
+            const token = document.getElementById('tokenInput').value;
+            if (token) {
+                localStorage.setItem('token', token);
+                document.getElementById('storageResult').innerHTML = `<p>Token已设置到localStorage</p>`;
+            } else {
+                alert('请先输入token');
+            }
+        }
+    </script>
+</body>
+</html>
