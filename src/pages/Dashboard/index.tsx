@@ -31,17 +31,34 @@ const Dashboard = () => {
     { title: '租户总数', value: dashboardData.totalTenants, icon: <UserOutlined />, color: '#1890ff' },
     { title: '合同数量', value: dashboardData.activeContracts, icon: <FileTextOutlined />, color: '#52c41a' },
     { title: '房间总数', value: dashboardData.totalRooms, icon: <HomeOutlined />, color: '#faad14' },
-    { title: '本月收入', value: dashboardData.monthlyIncome || 0, icon: <DollarOutlined />, color: '#f5222d', prefix: '¥' },
+    { title: '未缴费金额', value: dashboardData.unpaidAmount || 0, icon: <DollarOutlined />, color: '#f5222d' },
   ] : [
-    { title: '租户总数', value: 128, icon: <UserOutlined />, color: '#1890ff' },
-    { title: '合同数量', value: 95, icon: <FileTextOutlined />, color: '#52c41a' },
-    { title: '房间总数', value: 256, icon: <HomeOutlined />, color: '#faad14' },
-    { title: '本月收入', value: 125600, icon: <DollarOutlined />, color: '#f5222d', prefix: '¥' },
+    { title: '租户总数', value: 0, icon: <UserOutlined />, color: '#1890ff' },
+    { title: '合同数量', value: 0, icon: <FileTextOutlined />, color: '#52c41a' },
+    { title: '房间总数', value: 0, icon: <HomeOutlined />, color: '#faad14' },
+    { title: '未缴费金额', value: 0, icon: <DollarOutlined />, color: '#f5222d' },
   ]
 
   const incomeChartData = dashboardData?.incomeChart || []
   const maintenanceStatusData = dashboardData?.maintenanceStatusChart || []
   const feeTypeData = dashboardData?.feeTypeChart || []
+
+  // 维修状态中文映射
+  const maintenanceStatusMap: Record<string, string> = {
+    pending: '待处理',
+    processing: '处理中',
+    completed: '已完成',
+    cancelled: '已取消'
+  }
+
+  // 费用类型中文映射
+  const feeTypeMap: Record<string, string> = {
+    rent: '租金',
+    water: '水费',
+    electricity: '电费',
+    property: '物业费',
+    other: '其他'
+  }
 
   // 收入趋势图配置
   const incomeTrendOption: any = {
@@ -76,7 +93,7 @@ const Dashboard = () => {
         radius: ['40%', '70%'],
         data: maintenanceStatusData.length > 0 ? maintenanceStatusData.map((item: any) => ({
           value: item.count,
-          name: item.status,
+          name: maintenanceStatusMap[item.status] || item.status,
         })) : [{ value: 0, name: '暂无数据' }],
         emphasis: {
           itemStyle: {
@@ -98,7 +115,7 @@ const Dashboard = () => {
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
     xAxis: {
       type: 'category',
-      data: feeTypeData.length > 0 ? feeTypeData.map((item: any) => item.feeType) : [''],
+      data: feeTypeData.length > 0 ? feeTypeData.map((item: any) => feeTypeMap[item.feeType] || item.feeType) : [''],
     },
     yAxis: { type: 'value', name: '金额' },
     series: [
@@ -123,7 +140,8 @@ const Dashboard = () => {
                 prefix={stat.prefix || stat.icon}
                 valueStyle={{ color: stat.color }}
                 formatter={(value) => {
-                  if (stat.prefix === '¥') {
+                  // 未缴费金额使用格式化货币
+                  if (stat.title === '未缴费金额') {
                     return formatMoney(Number(value))
                   }
                   return value

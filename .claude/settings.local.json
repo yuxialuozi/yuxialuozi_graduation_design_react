@@ -9,7 +9,12 @@
       "Bash(npm run:*)",
       "Bash(curl:*)",
       "Bash(go build:*)",
-      "Bash(__NEW_LINE_fdfc909d57715c54__ echo:*)"
+      "Bash(__NEW_LINE_fdfc909d57715c54__ echo:*)",
+      "Bash(cd:*)",
+      "Bash(bash:*)",
+      "Bash(chmod +x:*)",
+      "Bash(pg_isready:*)",
+      "Bash(PGPASSWORD='Lycdemima1@' psql:*)"
     ]
   }
 }

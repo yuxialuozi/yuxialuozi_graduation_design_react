@@ -11,11 +11,11 @@ const { RangePicker } = DatePicker
 
 const Report = () => {
   const [loading, setLoading] = useState(false)
-  const [incomeData, setIncomeData] = useState([])
-  const [occupancyData, setOccupancyData] = useState([])
-  const [feeCompositionData, setFeeCompositionData] = useState([])
-  const [maintenanceStatsData, setMaintenanceStatsData] = useState([])
-  const [tenantRankingData, setTenantRankingData] = useState([])
+  const [incomeData, setIncomeData] = useState<{ byMonth: Array<{ month: string; amount: number }> }>({})
+  const [occupancyData, setOccupancyData] = useState<{ totalRooms: number; occupancyRate: number }>({})
+  const [feeCompositionData, setFeeCompositionData] = useState<Array<{ feeType: string; amount: number }>>([])
+  const [maintenanceStatsData, setMaintenanceStatsData] = useState<{ byStatus: Array<{ status: string; count: number }> }>({})
+  const [tenantRankingData, setTenantRankingData] = useState<Array<{ tenantId: number; tenantName: string; amount: number }>>([])
 
   useEffect(() => {
     fetchAllReports()
@@ -32,10 +32,10 @@ const Report = () => {
         getTenantRanking(),
       ])
 
-      setIncomeData(income || [])
-      setOccupancyData(occupancy || [])
+      setIncomeData(income || { byMonth: [] })
+      setOccupancyData(occupancy || { totalRooms: 0, occupancyRate: 0 })
       setFeeCompositionData(feeComp || [])
-      setMaintenanceStatsData(maintenance || [])
+      setMaintenanceStatsData(maintenance || { byStatus: [] })
       setTenantRankingData(ranking || [])
     } catch (error) {
       console.error('获取报表数据失败', error)
@@ -54,7 +54,7 @@ const Report = () => {
     legend: { bottom: 10, data: ['收入'] },
     xAxis: {
       type: 'category',
-      data: incomeData.length > 0 ? incomeData.map((item: any) => item.date) : [''],
+      data: incomeData?.byMonth?.length > 0 ? incomeData.byMonth.map((item: any) => item.month) : [''],
     },
     yAxis: { type: 'value', axisLabel: { formatter: '¥{value}' } },
     series: [
@@ -62,7 +62,7 @@ const Report = () => {
         name: '收入',
         type: 'line',
         smooth: true,
-        data: incomeData.length > 0 ? incomeData.map((item: any) => item.income) : [0],
+        data: incomeData?.byMonth?.length > 0 ? incomeData.byMonth.map((item: any) => item.amount) : [0],
         itemStyle: { color: '#1890ff' },
       },
     ],
@@ -70,30 +70,23 @@ const Report = () => {
 
   // 房间出租率趋势
   const occupancyTrendOption: any = {
-    title: { text: '房间出租率趋势', left: 'center' },
+    title: { text: '房间出租率统计', left: 'center' },
     tooltip: {
-      trigger: 'axis',
-    },
-    xAxis: {
-      type: 'category',
-      data: occupancyData.length > 0 ? occupancyData.map((item: any) => item.date) : [''],
-    },
-    yAxis: {
-      type: 'value',
-      max: 100,
-      axisLabel: { formatter: '{value}%' },
+      trigger: 'item',
+      formatter: '{b}: {c}%',
     },
     series: [
       {
         name: '出租率',
-        type: 'line',
-        smooth: true,
-        data: occupancyData.length > 0 ? occupancyData.map((item: any) => (item.occupancyRate * 100).toFixed(2)) : ['0'],
+        type: 'gauge',
+        detail: { formatter: '{value}%' },
+        data: [
+          {
+            value: occupancyData?.occupancyRate ? Number(occupancyData.occupancyRate.toFixed(2)) : 0,
+            name: '当前出租率',
+          },
+        ],
         itemStyle: { color: '#52c41a' },
-        label: {
-          show: true,
-          formatter: '{c}%'
-        }
       },
     ],
   }
@@ -135,14 +128,14 @@ const Report = () => {
     },
     xAxis: {
       type: 'category',
-      data: maintenanceStatsData.length > 0 ? maintenanceStatsData.map((item: any) => item.status) : [''],
+      data: maintenanceStatsData?.byStatus?.length > 0 ? maintenanceStatsData.byStatus.map((item: any) => item.status) : [''],
     },
     yAxis: { type: 'value' },
     series: [
       {
         name: '工单数量',
         type: 'bar',
-        data: maintenanceStatsData.length > 0 ? maintenanceStatsData.map((item: any) => item.count) : [0],
+        data: maintenanceStatsData?.byStatus?.length > 0 ? maintenanceStatsData.byStatus.map((item: any) => item.count) : [0],
         itemStyle: { color: '#1890ff' },
       },
     ],
@@ -150,12 +143,12 @@ const Report = () => {
 
   // 租户排名表格配置
   const rankingColumns: ColumnsType<any> = [
-    { title: '排名', dataIndex: 'rank', key: 'rank', width: 80 },
+    { title: '排名', dataIndex: 'rank', key: 'rank', width: 80, render: (_: any, __: any, index: number) => index + 1 },
     { title: '租户名称', dataIndex: 'tenantName', key: 'tenantName' },
     {
       title: '累计费用',
-      dataIndex: 'totalFee',
-      key: 'totalFee',
+      dataIndex: 'amount',
+      key: 'amount',
       render: (fee: number) => formatMoney(fee),
     },
   ]

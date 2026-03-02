@@ -4,7 +4,7 @@ import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined } from '@ant
 import type { ColumnsType } from 'antd/es/table'
 import type { Room } from '@/types'
 import { formatMoney } from '@/utils'
-import { getRoomList, createRoom, updateRoom, deleteRoom, assignTenant, type RoomFormData, type RoomQueryParams, type AssignTenantData } from '@/api'
+import { getRoomList, createRoom, updateRoom, deleteRoom, assignTenant, getTenantList, type RoomFormData, type RoomQueryParams, type AssignTenantData } from '@/api'
 import './index.less'
 
 const RoomList = () => {
@@ -19,12 +19,27 @@ const RoomList = () => {
   const [data, setData] = useState<Room[]>([])
   const [total, setTotal] = useState(0)
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 })
+  const [tenants, setTenants] = useState<any[]>([])
   const [form] = Form.useForm()
   const [assignForm] = Form.useForm()
+
+  // 加载租户列表
+  useEffect(() => {
+    loadTenants()
+  }, [])
 
   useEffect(() => {
     fetchData()
   }, [pagination.current, pagination.pageSize, searchKeyword, searchBuilding, searchStatus])
+
+  const loadTenants = async () => {
+    try {
+      const result = await getTenantList({ page: 1, pageSize: 100 })
+      setTenants(result.list)
+    } catch (error) {
+      console.error('加载租户列表失败', error)
+    }
+  }
 
   const fetchData = async () => {
     try {
@@ -166,7 +181,7 @@ const RoomList = () => {
     assignForm.validateFields().then(async (values) => {
       try {
         if (assignRoomId) {
-          await assignTenant(assignRoomId, values)
+          await assignTenant(assignRoomId, { tenantId: values.tenantId })
           message.success('分配成功')
           setAssignModalVisible(false)
           assignForm.resetFields()
@@ -314,10 +329,12 @@ const RoomList = () => {
             label="选择租户"
             rules={[{ required: true, message: '请选择租户' }]}
           >
-            <Select placeholder="请选择租户">
-              <Select.Option value={1}>张三</Select.Option>
-              <Select.Option value={2}>李四</Select.Option>
-              <Select.Option value={3}>王五</Select.Option>
+            <Select placeholder="请选择租户" loading={tenants.length === 0}>
+              {tenants.map((tenant: any) => (
+                <Select.Option key={tenant.id} value={tenant.id}>
+                  {tenant.name} {tenant.contactPerson && `(${tenant.contactPerson})`}
+                </Select.Option>
+              ))}
             </Select>
           </Form.Item>
         </Form>

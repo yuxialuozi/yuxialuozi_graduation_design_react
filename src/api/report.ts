@@ -11,38 +11,48 @@ export interface ReportQueryParams {
 
 // 收入报表数据
 export interface IncomeReportData {
-  date: string
-  income: number
+  total: number
+  byMonth: Array<{
+    month: string
+    amount: number
+  }>
+  byType: Array<{
+    feeType: string
+    amount: number
+  }>
 }
 
 // 入住率报表数据
 export interface OccupancyReportData {
-  date: string
-  occupancyRate: number
   totalRooms: number
   occupiedRooms: number
+  vacantRooms: number
+  occupancyRate: number
 }
 
 // 费用构成报表数据
 export interface FeeCompositionData {
   feeType: string
   amount: number
-  percentage: number
 }
 
 // 维修统计报表数据
 export interface MaintenanceStatsData {
-  status: string
-  count: number
-  percentage: number
+  byType: Array<{
+    type: string
+    count: number
+  }>
+  byStatus: Array<{
+    status: string
+    count: number
+  }>
 }
 
 // 租户排名数据
 export interface TenantRankingData {
   tenantId: number
   tenantName: string
-  totalFee: number
-  rank: number
+  amount: number
 }
 
 // 仪表盘数据
@@ -51,15 +61,10 @@ export interface DashboardData {
   totalRooms: number
   occupiedRooms: number
   occupancyRate: number
-  totalIncome: number
-  monthlyIncome: number
-  pendingFees: number
   activeContracts: number
+  pendingFees: number
+  unpaidAmount: number
   pendingMaintenance: number
-  recentTenants: Tenant[]
-  recentContracts: Contract[]
-  recentFees: Fee[]
-  recentMaintenance: Maintenance[]
   incomeChart: { date: string; amount: number }[]
   maintenanceStatusChart: { status: string; count: number }[]
   feeTypeChart: { feeType: string; amount: number }[]

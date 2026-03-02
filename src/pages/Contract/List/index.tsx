@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Table, Card, Button, Space, Input, Tag, Modal, Form, DatePicker, InputNumber, Select, message } from 'antd'
+import { Table, Card, Button, Space, Input, Tag, Modal, Form, DatePicker, InputNumber, Select, message, Descriptions } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import type { Contract } from '@/types'
@@ -11,6 +11,8 @@ import './index.less'
 const ContractList = () => {
   const [loading, setLoading] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
+  const [detailModalVisible, setDetailModalVisible] = useState(false)
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [searchKeyword, setSearchKeyword] = useState('')
   const [searchStatus, setSearchStatus] = useState('')
@@ -78,7 +80,7 @@ const ContractList = () => {
       key: 'action',
       render: (_, record) => (
         <Space>
-          <Button type="link" icon={<EyeOutlined />}>
+          <Button type="link" icon={<EyeOutlined />} onClick={() => handleView(record)}>
             查看
           </Button>
           <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
@@ -91,6 +93,11 @@ const ContractList = () => {
       ),
     },
   ]
+
+  const handleView = (record: Contract) => {
+    setSelectedContract(record)
+    setDetailModalVisible(true)
+  }
 
   const handleAdd = () => {
     setEditingId(null)
@@ -154,6 +161,11 @@ const ContractList = () => {
         setLoading(false)
       }
     })
+  }
+
+  const handleDetailModalOk = () => {
+    setDetailModalVisible(false)
+    setSelectedContract(null)
   }
 
   const handleSearch = (value: string) => {
@@ -252,6 +264,52 @@ const ContractList = () => {
             </Select>
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title="合同详情"
+        open={detailModalVisible}
+        onOk={handleDetailModalOk}
+        onCancel={() => setDetailModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setDetailModalVisible(false)}>
+            关闭
+          </Button>
+        ]}
+        width={700}
+      >
+        {selectedContract && (
+          <Descriptions bordered column={2}>
+            <Descriptions.Item label="合同编号" span={2}>
+              {selectedContract.contractNo}
+            </Descriptions.Item>
+            <Descriptions.Item label="租户名称" span={2}>
+              {selectedContract.tenantName}
+            </Descriptions.Item>
+            <Descriptions.Item label="开始日期">
+              {selectedContract.startDate}
+            </Descriptions.Item>
+            <Descriptions.Item label="结束日期">
+              {selectedContract.endDate}
+            </Descriptions.Item>
+            <Descriptions.Item label="合同金额" span={2}>
+              <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
+                {formatMoney(selectedContract.amount)}
+              </span>
+            </Descriptions.Item>
+            <Descriptions.Item label="状态">
+              <Tag color={statusMap[selectedContract.status]?.color}>
+                {statusMap[selectedContract.status]?.text}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="创建时间">
+              {selectedContract.createdAt}
+            </Descriptions.Item>
+            <Descriptions.Item label="更新时间" span={2}>
+              {selectedContract.updatedAt}
+            </Descriptions.Item>
+          </Descriptions>
+        )}
       </Modal>
     </Card>
   )
