@@ -63,12 +63,24 @@ const Dashboard = () => {
   // 收入趋势图配置
   const incomeTrendOption: any = {
     title: { text: '收入趋势', left: 'center' },
-    tooltip: { trigger: 'axis' },
+    tooltip: {
+      trigger: 'axis',
+      formatter: '{b}<br/>{c}元'
+    },
    xAxis: {
       type: 'category',
       data: incomeChartData.length > 0 ? incomeChartData.map((item: any) => item.date) : [''],
+      name: '日期',
+      nameLocation: 'middle',
+      nameTextStyle: { fontSize: 14, fontWeight: 'bold' }
     },
-    yAxis: { type: 'value', name: '金额' },
+    yAxis: {
+      type: 'value',
+      name: '金额（元）',
+      nameLocation: 'middle',
+      nameTextStyle: { fontSize: 14, fontWeight: 'bold' },
+      axisLabel: { formatter: '¥{value}' }
+    },
     series: [
       {
         name: '收入',
@@ -103,7 +115,7 @@ const Dashboard = () => {
           },
         },
         label: {
-          formatter: '{b}: {c} ({d}%)',
+          formatter: '{b}: {c}个 ({d}%)',
         },
       },
     ],
@@ -112,12 +124,25 @@ const Dashboard = () => {
   // 费用类型分布图配置
   const feeTypeOption: any = {
     title: { text: '费用类型分布', left: 'center' },
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: '{b}: {c}元'
+    },
     xAxis: {
       type: 'category',
       data: feeTypeData.length > 0 ? feeTypeData.map((item: any) => feeTypeMap[item.feeType] || item.feeType) : [''],
+      name: '费用类型',
+      nameLocation: 'middle',
+      nameTextStyle: { fontSize: 14, fontWeight: 'bold' }
     },
-    yAxis: { type: 'value', name: '金额' },
+    yAxis: {
+      type: 'value',
+      name: '金额（元）',
+      nameLocation: 'middle',
+      nameTextStyle: { fontSize: 14, fontWeight: 'bold' },
+      axisLabel: { formatter: '¥{value}' }
+    },
     series: [
       {
         name: '费用金额',

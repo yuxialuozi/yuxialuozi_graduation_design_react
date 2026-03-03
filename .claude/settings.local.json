@@ -14,7 +14,18 @@
       "Bash(bash:*)",
       "Bash(chmod +x:*)",
       "Bash(pg_isready:*)",
-      "Bash(PGPASSWORD='Lycdemima1@' psql:*)"
+      "Bash(PGPASSWORD='Lycdemima1@' psql:*)",
+      "Bash(__NEW_LINE_6277473333bb3358__ echo:*)",
+      "Bash(__NEW_LINE_bcb41e483ecb6b72__ echo:*)",
+      "Bash(__NEW_LINE_60dbbd8b1e3abf59__ echo:*)",
+      "Bash(__NEW_LINE_faac23d84a2e1bdd__ echo:*)",
+      "Bash(__NEW_LINE_d262ce0ea6bf029f__ echo:*)",
+      "Bash(__NEW_LINE_94d693da81df7ef5__ curl:*)",
+      "Bash(psql:*)",
+      "Bash(__NEW_LINE_097f1cf7e593dbc0__ echo:*)",
+      "Bash(__NEW_LINE_5973bb73a880f87d__ echo:*)",
+      "Bash(sed:*)",
+      "Bash(__NEW_LINE_8928a56f59958a04__ echo:*)"
     ]
   }
 }

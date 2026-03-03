@@ -12,8 +12,8 @@ export interface ReportQueryParams {
 // 收入报表数据
 export interface IncomeReportData {
   total: number
-  byMonth: Array<{
-    month: string
+  byDay: Array<{
+    day: string
     amount: number
   }>
   byType: Array<{

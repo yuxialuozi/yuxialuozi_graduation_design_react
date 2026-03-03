@@ -3,6 +3,7 @@ import { Card, Row, Col, DatePicker, Select, Statistic, Table, Spin } from 'antd
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons'
 import ReactECharts from 'echarts-for-react'
 import type { ColumnsType } from 'antd/es/table'
+import dayjs, { Dayjs } from 'dayjs'
 import { formatMoney } from '@/utils'
 import { getIncomeReport, getOccupancyReport, getFeeComposition, getMaintenanceStats, getTenantRanking } from '@/api'
 import './index.less'
@@ -11,7 +12,11 @@ const { RangePicker } = DatePicker
 
 const Report = () => {
   const [loading, setLoading] = useState(false)
-  const [incomeData, setIncomeData] = useState<{ byMonth: Array<{ month: string; amount: number }> }>({})
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([
+    dayjs('2025-01-01'), // 默认2025年1月1日
+    dayjs('2025-12-31')  // 默认2025年12月31日
+  ])
+  const [incomeData, setIncomeData] = useState<{ byDay: Array<{ day: string; amount: number }> }>({})
   const [occupancyData, setOccupancyData] = useState<{ totalRooms: number; occupancyRate: number }>({})
   const [feeCompositionData, setFeeCompositionData] = useState<Array<{ feeType: string; amount: number }>>([])
   const [maintenanceStatsData, setMaintenanceStatsData] = useState<{ byStatus: Array<{ status: string; count: number }> }>({})
@@ -19,20 +24,35 @@ const Report = () => {
 
   useEffect(() => {
     fetchAllReports()
-  }, [])
+  }, [dateRange])
 
   const fetchAllReports = async () => {
     try {
       setLoading(true)
       const [income, occupancy, feeComp, maintenance, ranking] = await Promise.all([
-        getIncomeReport(),
-        getOccupancyReport(),
-        getFeeComposition(),
-        getMaintenanceStats(),
-        getTenantRanking(),
+        getIncomeReport({
+          start: dateRange[0].format('YYYY-MM-DD'),
+          end: dateRange[1].format('YYYY-MM-DD'),
+        }),
+        getOccupancyReport({
+          start: dateRange[0].format('YYYY-MM-DD'),
+          end: dateRange[1].format('YYYY-MM-DD'),
+        }),
+        getFeeComposition({
+          start: dateRange[0].format('YYYY-MM-DD'),
+          end: dateRange[1].format('YYYY-MM-DD'),
+        }),
+        getMaintenanceStats({
+          start: dateRange[0].format('YYYY-MM-DD'),
+          end: dateRange[1].format('YYYY-MM-DD'),
+        }),
+        getTenantRanking({
+          start: dateRange[0].format('YYYY-MM-DD'),
+          end: dateRange[1].format('YYYY-MM-DD'),
+        }),
       ])
 
-      setIncomeData(income || { byMonth: [] })
+      setIncomeData(income || { byDay: [] })
       setOccupancyData(occupancy || { totalRooms: 0, occupancyRate: 0 })
       setFeeCompositionData(feeComp || [])
       setMaintenanceStatsData(maintenance || { byStatus: [] })
@@ -44,25 +64,41 @@ const Report = () => {
     }
   }
 
+  const handleDateRangeChange = (dates: [Dayjs, Dayjs] | null) => {
+    if (dates && dates[0] && dates[1]) {
+      setDateRange(dates)
+    }
+  }
+
   // 收入趋势图配置
   const incomeTrendOption: any = {
     title: { text: '收入趋势分析', left: 'center' },
     tooltip: {
       trigger: 'axis',
-      axisPointer: { type: 'cross' }
+      axisPointer: { type: 'cross' },
+      formatter: '{b}<br/>{c}元'
     },
     legend: { bottom: 10, data: ['收入'] },
     xAxis: {
       type: 'category',
-      data: incomeData?.byMonth?.length > 0 ? incomeData.byMonth.map((item: any) => item.month) : [''],
+      data: incomeData?.byDay?.length > 0 ? incomeData.byDay.map((item: any) => item.day) : [''],
+      name: '日期',
+      nameLocation: 'middle',
+      nameTextStyle: { fontSize: 14, fontWeight: 'bold' }
     },
-    yAxis: { type: 'value', axisLabel: { formatter: '¥{value}' } },
+    yAxis: {
+      type: 'value',
+      name: '金额（元）',
+      nameLocation: 'middle',
+      nameTextStyle: { fontSize: 14, fontWeight: 'bold' },
+      axisLabel: { formatter: '¥{value}' }
+    },
     series: [
       {
         name: '收入',
         type: 'line',
         smooth: true,
-        data: incomeData?.byMonth?.length > 0 ? incomeData.byMonth.map((item: any) => item.amount) : [0],
+        data: incomeData?.byDay?.length > 0 ? incomeData.byDay.map((item: any) => item.amount) : [0],
         itemStyle: { color: '#1890ff' },
       },
     ],
@@ -106,7 +142,10 @@ const Report = () => {
         radius: ['40%', '70%'],
         data: feeCompositionData.length > 0 ? feeCompositionData.map((item: any) => ({
           value: item.amount,
-          name: item.feeType,
+          name: item.feeType === 'rent' ? '租金' :
+                item.feeType === 'water' ? '水费' :
+                item.feeType === 'electricity' ? '电费' :
+                item.feeType === 'property' ? '物业费' : '其他'
         })) : [{ value: 0, name: '暂无数据' }],
         emphasis: {
           itemStyle: {
@@ -128,9 +167,22 @@ const Report = () => {
     },
     xAxis: {
       type: 'category',
-      data: maintenanceStatsData?.byStatus?.length > 0 ? maintenanceStatsData.byStatus.map((item: any) => item.status) : [''],
+      data: maintenanceStatsData?.byStatus?.length > 0 ? maintenanceStatsData.byStatus.map((item: any) =>
+        item.status === 'pending' ? '待处理' :
+        item.status === 'processing' ? '处理中' :
+        item.status === 'completed' ? '已完成' :
+        item.status === 'cancelled' ? '已取消' : item.status
+      ) : [''],
+      name: '工单状态',
+      nameLocation: 'middle',
+      nameTextStyle: { fontSize: 14, fontWeight: 'bold' }
     },
-    yAxis: { type: 'value' },
+    yAxis: {
+      type: 'value',
+      name: '工单数量',
+      nameLocation: 'middle',
+      nameTextStyle: { fontSize: 14, fontWeight: 'bold' }
+    },
     series: [
       {
         name: '工单数量',
@@ -156,6 +208,22 @@ const Report = () => {
   return (
     <Spin spinning={loading}>
       <div className="report">
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          <Col xs={24}>
+            <Card bordered={false}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <span>统计时间：</span>
+                <RangePicker
+                  value={dateRange}
+                  onChange={handleDateRangeChange}
+                  format="YYYY-MM-DD"
+                  allowClear={false}
+                />
+              </div>
+            </Card>
+          </Col>
+        </Row>
+
         <Row gutter={[16, 16]}>
           <Col xs={24} lg={12}>
             <Card title="收入趋势" bordered={false}>
