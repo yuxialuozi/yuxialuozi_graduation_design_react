@@ -180,7 +180,7 @@ const Dashboard = () => {
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} lg={24}>
           <Card title="收入趋势" loading={loading} bordered={false}>
-            <ReactECharts option={incomeTrendOption} style={{ height: 300 }} />
+            <ReactECharts option={incomeTrendOption} style={{ height: 300 }} notMerge={true} />
           </Card>
         </Col>
       </Row>
@@ -188,12 +188,12 @@ const Dashboard = () => {
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} lg={12}>
           <Card title="维修工单状态分布" loading={loading} bordered={false}>
-            <ReactECharts option={maintenanceStatusOption} style={{ height: 300 }} />
+            <ReactECharts option={maintenanceStatusOption} style={{ height: 300 }} notMerge={true} />
           </Card>
         </Col>
         <Col xs={24} lg={12}>
           <Card title="费用类型分布" loading={loading} bordered={false}>
-            <ReactECharts option={feeTypeOption} style={{ height: 300 }} />
+            <ReactECharts option={feeTypeOption} style={{ height: 300 }} notMerge={true} />
           </Card>
         </Col>
       </Row>

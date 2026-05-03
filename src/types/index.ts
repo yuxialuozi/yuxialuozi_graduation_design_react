@@ -6,6 +6,7 @@ export interface UserInfo {
   avatar?: string
   role: string
   permissions: string[]
+  tenantId?: number // 关联的租户ID
 }
 
 // 登录请求参数
@@ -121,4 +122,55 @@ export interface RouteMeta {
   title: string
   icon?: string
   requiresAuth?: boolean
+}
+
+// ========== 租户端类型 ==========
+
+// 租户个人信息响应
+export interface TenantProfile {
+  userId: number
+  username: string
+  nickname: string
+  tenantId: number
+  tenantName: string
+  contact: string
+  phone: string
+  email: string
+  activeRoom: number
+  activeContract: number
+  unpaidFee: number
+  pendingMaintenance: number
+}
+
+// 租户仪表盘响应
+export interface TenantDashboard {
+  totalContract: number
+  activeContract: number
+  totalRoom: number
+  totalFee: number
+  unpaidFee: number
+  paidFee: number
+  totalMaintenance: number
+  pendingMaintenance: number
+  feeTrend: FeeTrendItem[]
+  recentFees: Fee[]
+  contractList: Contract[]
+}
+
+// 费用趋势项
+export interface FeeTrendItem {
+  month: string
+  amount: number
+}
+
+// 维修工单请求
+export interface MaintenanceRequest {
+  type: string
+  description: string
+  priority?: string
+}
+
+// 缴费请求
+export interface PayFeeRequest {
+  paidDate?: string
 }

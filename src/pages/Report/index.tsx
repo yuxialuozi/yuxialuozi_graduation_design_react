@@ -12,9 +12,10 @@ const { RangePicker } = DatePicker
 
 const Report = () => {
   const [loading, setLoading] = useState(false)
+  const currentYear = dayjs().year()
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([
-    dayjs('2025-01-01'), // 默认2025年1月1日
-    dayjs('2025-12-31')  // 默认2025年12月31日
+    dayjs(`${currentYear}-01-01`),
+    dayjs(`${currentYear}-12-31`),
   ])
   const [incomeData, setIncomeData] = useState<{ byDay: Array<{ day: string; amount: number }> }>({})
   const [occupancyData, setOccupancyData] = useState<{ totalRooms: number; occupancyRate: number }>({})
@@ -227,12 +228,12 @@ const Report = () => {
         <Row gutter={[16, 16]}>
           <Col xs={24} lg={12}>
             <Card title="收入趋势" bordered={false}>
-              <ReactECharts option={incomeTrendOption} style={{ height: 350 }} />
+              <ReactECharts option={incomeTrendOption} style={{ height: 350 }} notMerge={true} />
             </Card>
           </Col>
           <Col xs={24} lg={12}>
             <Card title="房间出租率" bordered={false}>
-              <ReactECharts option={occupancyTrendOption} style={{ height: 350 }} />
+              <ReactECharts option={occupancyTrendOption} style={{ height: 350 }} notMerge={true} />
             </Card>
           </Col>
         </Row>
@@ -240,12 +241,12 @@ const Report = () => {
         <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
           <Col xs={24} lg={12}>
             <Card title="费用构成" bordered={false}>
-              <ReactECharts option={feeCompositionOption} style={{ height: 350 }} />
+              <ReactECharts option={feeCompositionOption} style={{ height: 350 }} notMerge={true} />
             </Card>
           </Col>
           <Col xs={24} lg={12}>
             <Card title="维修工单统计" bordered={false}>
-              <ReactECharts option={maintenanceStatsOption} style={{ height: 350 }} />
+              <ReactECharts option={maintenanceStatsOption} style={{ height: 350 }} notMerge={true} />
             </Card>
           </Col>
         </Row>
