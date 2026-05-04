@@ -47,7 +47,7 @@ const AIChat = ({
       {
         id: 'welcome',
         role: 'assistant',
-        content: `您好！我是 ${title}，基于智谱 AI 大模型，可以帮助您处理租户管理相关的各类问题。\n\n有什么可以帮您的吗？`,
+        content: `您好！我是 ${title}，基于智谱 AI 大模型和租户管理系统知识库。\n\n我可以帮您解答关于费用、合同、维修、房间等方面的业务问题。请问有什么可以帮您的？`,
         timestamp: new Date(),
       },
     ])
