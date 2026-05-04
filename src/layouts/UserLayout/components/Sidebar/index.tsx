@@ -6,6 +6,7 @@ import {
   FileTextOutlined,
   DollarOutlined,
   ToolOutlined,
+  RobotOutlined,
 } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
 import './index.less'
@@ -39,6 +40,11 @@ const menuItems: MenuItem[] = [
     key: '/user/maintenance',
     icon: <ToolOutlined />,
     label: '维修工单',
+  },
+  {
+    key: '/user/ai',
+    icon: <RobotOutlined />,
+    label: 'AI 助手',
   },
 ]
 

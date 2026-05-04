@@ -12,6 +12,7 @@ const RoomList = lazy(() => import('@/pages/Room/List'))
 const FeeList = lazy(() => import('@/pages/Fee/List'))
 const MaintenanceList = lazy(() => import('@/pages/Maintenance/List'))
 const Report = lazy(() => import('@/pages/Report'))
+const AI = lazy(() => import('@/pages/AI'))
 
 // 用户端页面组件
 const UserDashboard = lazy(() => import('@/pages/User/Dashboard'))
@@ -19,6 +20,7 @@ const UserProfile = lazy(() => import('@/pages/User/Profile'))
 const UserContract = lazy(() => import('@/pages/User/Contract'))
 const UserFee = lazy(() => import('@/pages/User/Fee'))
 const UserMaintenance = lazy(() => import('@/pages/User/Maintenance'))
+const UserAI = lazy(() => import('@/pages/User/AI'))
 
 export const routes: RouteObject[] = [
   {
@@ -86,6 +88,10 @@ export const routes: RouteObject[] = [
         path: 'report',
         element: <Report />,
       },
+      {
+        path: 'ai',
+        element: <AI />,
+      },
     ],
   },
   // 用户端路由
@@ -116,6 +122,10 @@ export const routes: RouteObject[] = [
       {
         path: 'maintenance',
         element: <UserMaintenance />,
+      },
+      {
+        path: 'ai',
+        element: <UserAI />,
       },
     ],
   },

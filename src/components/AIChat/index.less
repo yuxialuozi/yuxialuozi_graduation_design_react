@@ -1,0 +1,185 @@
+.ai-chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #f5f5f5;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e8e8e8;
+}
+
+/* 头部 */
+.ai-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.ai-chat-title {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.ai-chat-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* 消息列表 */
+.ai-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 空状态 */
+.ai-chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+  color: #999;
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+/* 消息样式 */
+.ai-chat-message {
+  display: flex;
+  gap: 12px;
+  max-width: 80%;
+
+  &.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+
+    .message-avatar {
+      background: #1890ff;
+    }
+
+    .message-bubble {
+      background: #1890ff;
+      color: #fff;
+    }
+
+    .message-time {
+      text-align: right;
+    }
+  }
+
+  &.assistant {
+    align-self: flex-start;
+
+    .message-avatar {
+      background: #52c41a;
+    }
+  }
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.message-bubble {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  &.loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #999;
+  }
+}
+
+.message-time {
+  font-size: 11px;
+  color: #bbb;
+}
+
+/* 快捷问题 */
+.ai-chat-quick-actions {
+  padding: 12px 16px;
+  background: #fff;
+  border-top: 1px solid #e8e8e8;
+}
+
+.quick-actions-title {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.quick-actions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 输入区域 */
+.ai-chat-input {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fff;
+  border-top: 1px solid #e8e8e8;
+
+  .ant-input {
+    flex: 1;
+    resize: none;
+    border-radius: 8px;
+  }
+
+  .ant-btn-primary {
+    flex-shrink: 0;
+    border-radius: 8px;
+  }
+}
+
+/* 滚动条样式 */
+.ai-chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}

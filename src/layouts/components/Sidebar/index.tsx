@@ -8,6 +8,7 @@ import {
   DollarOutlined,
   ToolOutlined,
   BarChartOutlined,
+  RobotOutlined,
 } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
 import { useAppStore } from '@/store'
@@ -67,6 +68,11 @@ const menuItems: MenuItem[] = [
     key: '/report',
     icon: <BarChartOutlined />,
     label: '报表统计',
+  },
+  {
+    key: '/ai',
+    icon: <RobotOutlined />,
+    label: 'AI 助手',
   },
 ]
 
