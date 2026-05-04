@@ -42,8 +42,11 @@ const ContractList = () => {
       const result = await getContractList(params)
       setData(result.list)
       setTotal(result.total)
-    } catch (error) {
-      message.error('获取合同列表失败')
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '获取合同列表失败')
+      }
     } finally {
       setLoading(false)
     }
@@ -124,8 +127,11 @@ const ContractList = () => {
           await deleteContract(record.id)
           message.success('删除成功')
           fetchData()
-        } catch (error) {
-          message.error('删除失败')
+        } catch (error: unknown) {
+          const err = error as Error
+          if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+            message.error(err.message || '删除失败')
+          }
         }
       },
     })
@@ -155,8 +161,11 @@ const ContractList = () => {
         form.resetFields()
         setEditingId(null)
         fetchData()
-      } catch (error) {
-        message.error(editingId ? '更新失败' : '创建失败')
+      } catch (error: unknown) {
+        const err = error as Error
+        if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+          message.error(err.message || (editingId ? '更新失败' : '创建失败'))
+        }
       } finally {
         setLoading(false)
       }

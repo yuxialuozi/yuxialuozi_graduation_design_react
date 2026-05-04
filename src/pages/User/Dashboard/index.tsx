@@ -20,14 +20,13 @@ const UserDashboard = () => {
   const fetchDashboard = async () => {
     try {
       setLoading(true)
-      const res = await getTenantDashboard()
-      if (res.code === 0) {
-        setDashboardData(res.data)
-      } else {
-        message.error(res.message || '获取数据失败')
+      const data = await getTenantDashboard()
+      setDashboardData(data)
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '获取仪表盘数据失败')
       }
-    } catch {
-      message.error('获取数据失败')
     } finally {
       setLoading(false)
     }

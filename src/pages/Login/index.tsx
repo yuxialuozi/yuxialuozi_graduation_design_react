@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Form, Input, Button, Card, Tabs, message } from 'antd'
+import { Form, Input, Button, Card, Tabs, message, Alert } from 'antd'
 import { UserOutlined, LockOutlined, TeamOutlined, CrownOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useUserStore } from '@/store'
@@ -13,13 +13,15 @@ const Login = () => {
   const [form] = Form.useForm()
   const [activeTab, setActiveTab] = useState('tenant')
   const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
 
   const onFinish = async (values: LoginParams) => {
+    setErrorMsg('') // 清除之前的错误
     try {
       setLoading(true)
       const result = await login(values)
       console.log('登录响应数据:', result)
-      const userInfo = result.userInfo || result.user
+      const userInfo = result.user
       if (!userInfo) {
         message.error('登录失败，服务器返回数据格式错误')
         return
@@ -31,6 +33,7 @@ const Login = () => {
       localStorage.setItem('token', result.token)
 
       userLogin(result.token, userInfo)
+      setErrorMsg('')
       message.success('登录成功')
 
       // 根据角色跳转到不同页面
@@ -39,9 +42,9 @@ const Login = () => {
       } else {
         navigate('/user/dashboard')
       }
-    } catch (error) {
-      console.error('登录错误:', error)
-      message.error('登录失败，请检查用户名和密码')
+    } catch (error: unknown) {
+      const err = error as Error
+      setErrorMsg(err.message || '登录失败，请检查用户名和密码')
     } finally {
       setLoading(false)
     }
@@ -135,6 +138,14 @@ const Login = () => {
   return (
     <div className="login-container">
       <Card className="login-card" title="租户信息管理系统">
+        {errorMsg && (
+          <Alert
+            message={errorMsg}
+            type="error"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        )}
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}

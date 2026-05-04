@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Row, Col, Card, Statistic } from 'antd'
+import { Row, Col, Card, Statistic, message } from 'antd'
 import { UserOutlined, FileTextOutlined, HomeOutlined, DollarOutlined } from '@ant-design/icons'
 import ReactECharts from 'echarts-for-react'
 import { getDashboard } from '@/api'
@@ -19,8 +19,12 @@ const Dashboard = () => {
       setLoading(true)
       const data = await getDashboard()
       setDashboardData(data)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('获取仪表盘数据失败', error)
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '获取仪表盘数据失败')
+      }
     } finally {
       setLoading(false)
     }

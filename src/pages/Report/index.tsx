@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Card, Row, Col, DatePicker, Select, Statistic, Table, Spin } from 'antd'
+import { Card, Row, Col, DatePicker, Select, Statistic, Table, Spin, message } from 'antd'
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons'
 import ReactECharts from 'echarts-for-react'
 import type { ColumnsType } from 'antd/es/table'
@@ -58,8 +58,11 @@ const Report = () => {
       setFeeCompositionData(feeComp || [])
       setMaintenanceStatsData(maintenance || { byStatus: [] })
       setTenantRankingData(ranking || [])
-    } catch (error) {
-      console.error('获取报表数据失败', error)
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '获取报表数据失败')
+      }
     } finally {
       setLoading(false)
     }

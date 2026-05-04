@@ -14,15 +14,14 @@ const UserContract = () => {
   const fetchContracts = async () => {
     try {
       setLoading(true)
-      const res = await getTenantContracts({ page, pageSize })
-      if (res.code === 0) {
-        setContracts(res.data.list || [])
-        setTotal(res.data.total || 0)
-      } else {
-        message.error(res.message || '获取合同列表失败')
+      const result = await getTenantContracts({ page, pageSize })
+      setContracts(result.list || [])
+      setTotal(result.total || 0)
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '获取合同列表失败')
       }
-    } catch {
-      message.error('获取合同列表失败')
     } finally {
       setLoading(false)
     }
@@ -86,7 +85,7 @@ const UserContract = () => {
             pagination={{
               current: page,
               pageSize,
-              total: total || 1,
+              total: total,
               showSizeChanger: true,
               showQuickJumper: true,
               showTotal: (t) => `共 ${t} 条`,

@@ -21,15 +21,14 @@ const UserMaintenance = () => {
   const fetchMaintenance = async () => {
     try {
       setLoading(true)
-      const res = await getTenantMaintenance({ page, pageSize, status: statusFilter })
-      if (res.code === 0) {
-        setMaintenances(res.data.list || [])
-        setTotal(res.data.total || 0)
-      } else {
-        message.error(res.message || '获取维修工单失败')
+      const result = await getTenantMaintenance({ page, pageSize, status: statusFilter })
+      setMaintenances(result.list || [])
+      setTotal(result.total || 0)
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '获取维修工单列表失败')
       }
-    } catch {
-      message.error('获取维修工单失败')
     } finally {
       setLoading(false)
     }
@@ -43,20 +42,20 @@ const UserMaintenance = () => {
     try {
       const values = await form.validateFields()
       setSubmitLoading(true)
-      const res = await createTenantMaintenance(values)
-      if (res.code === 0) {
-        message.success('提交成功')
-        setModalVisible(false)
-        form.resetFields()
-        fetchMaintenance()
-      } else {
-        message.error(res.message || '提交失败')
+      await createTenantMaintenance(values)
+      message.success('提交成功')
+      setModalVisible(false)
+      form.resetFields()
+      fetchMaintenance()
+    } catch (error: unknown) {
+      // 表单验证错误由 Ant Design Form 处理，不显示重复消息
+      if (error && typeof error === 'object' && 'errorFields' in error) {
+        return
       }
-    } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'errorFields' in err) {
-        return // Form validation error, do nothing
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '提交失败')
       }
-      message.error('提交失败')
     } finally {
       setSubmitLoading(false)
     }
@@ -162,7 +161,7 @@ const UserMaintenance = () => {
             pagination={{
               current: page,
               pageSize,
-              total: total || 1,
+              total: total,
               showSizeChanger: true,
               showQuickJumper: true,
               showTotal: (t) => `共 ${t} 条`,

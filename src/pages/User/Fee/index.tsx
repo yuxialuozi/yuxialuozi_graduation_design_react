@@ -18,15 +18,14 @@ const UserFee = () => {
   const fetchFees = async () => {
     try {
       setLoading(true)
-      const res = await getTenantFees({ page, pageSize, status: statusFilter, feeType: feeTypeFilter })
-      if (res.code === 0) {
-        setFees(res.data.list || [])
-        setTotal(res.data.total || 0)
-      } else {
-        message.error(res.message || '获取账单列表失败')
+      const result = await getTenantFees({ page, pageSize, status: statusFilter, feeType: feeTypeFilter })
+      setFees(result.list || [])
+      setTotal(result.total || 0)
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '获取账单列表失败')
       }
-    } catch {
-      message.error('获取账单列表失败')
     } finally {
       setLoading(false)
     }
@@ -45,15 +44,14 @@ const UserFee = () => {
       onOk: async () => {
         try {
           setPayingId(record.id)
-          const res = await payTenantFee(record.id)
-          if (res.code === 0) {
-            message.success('缴费成功')
-            fetchFees()
-          } else {
-            message.error(res.message || '缴费失败')
+          await payTenantFee(record.id)
+          message.success('缴费成功')
+          fetchFees()
+        } catch (error: unknown) {
+          const err = error as Error
+          if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+            message.error(err.message || '缴费失败')
           }
-        } catch {
-          message.error('缴费失败')
         } finally {
           setPayingId(null)
         }

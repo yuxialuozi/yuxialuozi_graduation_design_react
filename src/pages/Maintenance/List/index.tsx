@@ -42,8 +42,11 @@ const MaintenanceList = () => {
     try {
       const result = await getTenantList({ page: 1, pageSize: 100 })
       setTenants(result.list)
-    } catch (error) {
-      console.error('加载租户列表失败', error)
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '加载租户列表失败')
+      }
     }
   }
 
@@ -62,8 +65,11 @@ const MaintenanceList = () => {
       const result = await getMaintenanceList(params)
       setData(result.list)
       setTotal(result.total)
-    } catch (error) {
-      message.error('获取维修工单列表失败')
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '获取维修工单列表失败')
+      }
     } finally {
       setLoading(false)
     }
@@ -186,8 +192,11 @@ const MaintenanceList = () => {
           await deleteMaintenance(record.id)
           message.success('删除成功')
           fetchData()
-        } catch (error) {
-          message.error('删除失败')
+        } catch (error: unknown) {
+          const err = error as Error
+          if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+            message.error(err.message || '删除失败')
+          }
         }
       },
     })
@@ -223,8 +232,11 @@ const MaintenanceList = () => {
         form.resetFields()
         setEditingId(null)
         fetchData()
-      } catch (error) {
-        message.error(editingId ? '更新失败' : '创建失败')
+      } catch (error: unknown) {
+        const err = error as Error
+        if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+          message.error(err.message || (editingId ? '更新失败' : '创建失败'))
+        }
       } finally {
         setLoading(false)
       }
@@ -242,8 +254,11 @@ const MaintenanceList = () => {
           setAssignTicketId(null)
           fetchData()
         }
-      } catch (error) {
-        message.error('分配失败')
+      } catch (error: unknown) {
+        const err = error as Error
+        if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+          message.error(err.message || '分配失败')
+        }
       }
     })
   }
@@ -262,8 +277,11 @@ const MaintenanceList = () => {
           setCompleteTicketId(null)
           fetchData()
         }
-      } catch (error) {
-        message.error('操作失败')
+      } catch (error: unknown) {
+        const err = error as Error
+        if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+          message.error(err.message || '操作失败')
+        }
       }
     })
   }

@@ -42,8 +42,11 @@ const FeeList = () => {
       const result = await getFeeList(params)
       setData(result.list)
       setTotal(result.total)
-    } catch (error) {
-      message.error('获取费用列表失败')
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '获取费用列表失败')
+      }
     } finally {
       setLoading(false)
     }
@@ -142,8 +145,11 @@ const FeeList = () => {
           await deleteFee(record.id)
           message.success('删除成功')
           fetchData()
-        } catch (error) {
-          message.error('删除失败')
+        } catch (error: unknown) {
+          const err = error as Error
+          if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+            message.error(err.message || '删除失败')
+          }
         }
       },
     })
@@ -161,8 +167,11 @@ const FeeList = () => {
           await payFee(record.id, payData)
           message.success('缴费确认成功')
           fetchData()
-        } catch (error) {
-          message.error('缴费确认失败')
+        } catch (error: unknown) {
+          const err = error as Error
+          if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+            message.error(err.message || '缴费确认失败')
+          }
         }
       },
     })
@@ -191,8 +200,11 @@ const FeeList = () => {
         form.resetFields()
         setEditingId(null)
         fetchData()
-      } catch (error) {
-        message.error(editingId ? '更新失败' : '创建失败')
+      } catch (error: unknown) {
+        const err = error as Error
+        if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+          message.error(err.message || (editingId ? '更新失败' : '创建失败'))
+        }
       } finally {
         setLoading(false)
       }

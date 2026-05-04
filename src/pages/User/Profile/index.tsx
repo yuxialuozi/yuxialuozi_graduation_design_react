@@ -24,14 +24,13 @@ const UserProfile = () => {
   const fetchProfile = async () => {
     try {
       setLoading(true)
-      const res = await getTenantProfile()
-      if (res.code === 0) {
-        setProfile(res.data)
-      } else {
-        message.error(res.message || '获取信息失败')
+      const data = await getTenantProfile()
+      setProfile(data)
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '获取信息失败')
       }
-    } catch {
-      message.error('获取信息失败')
     } finally {
       setLoading(false)
     }
@@ -45,19 +44,22 @@ const UserProfile = () => {
     try {
       const values = await form.validateFields()
       setPasswordLoading(true)
-      const res = await changePassword({
+      await changePassword({
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
       })
-      if (res.code === 0) {
-        message.success('密码修改成功')
-        setPasswordModalVisible(false)
-        form.resetFields()
-      } else {
-        message.error(res.message || '密码修改失败')
+      message.success('密码修改成功')
+      setPasswordModalVisible(false)
+      form.resetFields()
+    } catch (error: unknown) {
+      // 表单验证错误由 Ant Design Form 处理，不显示重复消息
+      if (error && typeof error === 'object' && 'errorFields' in error) {
+        return
       }
-    } catch {
-      // 表单验证失败或其他错误
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '密码修改失败')
+      }
     } finally {
       setPasswordLoading(false)
     }
