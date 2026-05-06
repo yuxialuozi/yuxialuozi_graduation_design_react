@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Card, Descriptions, Row, Col, Statistic, Spin, message, Tag, Button, Modal, Form, Input, Space } from 'antd'
+import { Card, Descriptions, Row, Col, Statistic, Spin, message, Tag, Button, Modal, Form, Input } from 'antd'
 import {
-  UserOutlined,
   HomeOutlined,
   FileTextOutlined,
   DollarOutlined,
@@ -52,7 +51,6 @@ const UserProfile = () => {
       setPasswordModalVisible(false)
       form.resetFields()
     } catch (error: unknown) {
-      // 表单验证错误由 Ant Design Form 处理，不显示重复消息
       if (error && typeof error === 'object' && 'errorFields' in error) {
         return
       }
@@ -66,7 +64,7 @@ const UserProfile = () => {
   }
 
   const getRoleTag = () => {
-    const role = userInfo?.role || profile?.tenantId ? 'user' : 'unknown'
+    const role = userInfo?.role
     if (role === 'admin') {
       return <Tag color="red">管理员</Tag>
     }
@@ -83,7 +81,56 @@ const UserProfile = () => {
 
   return (
     <div className="user-profile">
-      <h2>个人信息</h2>
+      <div className="page-header">
+        <h2>个人信息</h2>
+        <p>查看和管理您的个人信息和账号设置</p>
+      </div>
+
+      {/* 统计信息 */}
+      <Row gutter={[16, 16]} className="stats-row">
+        <Col xs={12} lg={6}>
+          <Card bordered={false} className="stat-card">
+            <Statistic
+              title="有效合同"
+              value={profile?.activeContract || 0}
+              prefix={<FileTextOutlined style={{ color: '#3182ce' }} />}
+              valueStyle={{ color: '#1a365d' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} lg={6}>
+          <Card bordered={false} className="stat-card">
+            <Statistic
+              title="租住房间"
+              value={profile?.activeRoom || 0}
+              prefix={<HomeOutlined style={{ color: '#48bb78' }} />}
+              valueStyle={{ color: '#1a365d' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} lg={6}>
+          <Card bordered={false} className="stat-card">
+            <Statistic
+              title="未缴费用"
+              value={profile?.unpaidFee || 0}
+              precision={2}
+              suffix="元"
+              prefix={<DollarOutlined style={{ color: (profile?.unpaidFee || 0) > 0 ? '#f56565' : '#48bb78' }} />}
+              valueStyle={{ color: (profile?.unpaidFee || 0) > 0 ? '#f56565' : '#48bb78' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} lg={6}>
+          <Card bordered={false} className="stat-card">
+            <Statistic
+              title="待处理维修"
+              value={profile?.pendingMaintenance || 0}
+              prefix={<ToolOutlined style={{ color: (profile?.pendingMaintenance || 0) > 0 ? '#ed8936' : '#48bb78' }} />}
+              valueStyle={{ color: (profile?.pendingMaintenance || 0) > 0 ? '#ed8936' : '#48bb78' }}
+            />
+          </Card>
+        </Col>
+      </Row>
 
       {/* 租户基本信息 */}
       <Card title="租户信息" className="profile-card">
@@ -95,54 +142,12 @@ const UserProfile = () => {
         </Descriptions>
       </Card>
 
-      {/* 统计信息 */}
-      <Row gutter={16} className="stats-row">
-        <Col span={6}>
-          <Card className="stat-card">
-            <Statistic
-              title={<><FileTextOutlined /> 有效合同</>}
-              value={profile?.activeContract || 0}
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card className="stat-card">
-            <Statistic
-              title={<><HomeOutlined /> 租住房间</>}
-              value={profile?.activeRoom || 0}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card className="stat-card">
-            <Statistic
-              title={<><DollarOutlined /> 未缴费用</>}
-              value={profile?.unpaidFee || 0}
-              precision={2}
-              suffix="元"
-              valueStyle={{ color: (profile?.unpaidFee || 0) > 0 ? '#ff4d4f' : '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card className="stat-card">
-            <Statistic
-              title={<><ToolOutlined /> 待处理维修</>}
-              value={profile?.pendingMaintenance || 0}
-              valueStyle={{ color: (profile?.pendingMaintenance || 0) > 0 ? '#faad14' : '#52c41a' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
       {/* 账号信息 */}
       <Card
         title="账号信息"
         className="profile-card"
         extra={
-          <Button icon={<LockOutlined />} onClick={() => setPasswordModalVisible(true)}>
+          <Button type="primary" icon={<LockOutlined />} onClick={() => setPasswordModalVisible(true)}>
             修改密码
           </Button>
         }

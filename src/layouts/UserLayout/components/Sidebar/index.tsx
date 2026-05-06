@@ -15,6 +15,16 @@ const { Sider } = Layout
 
 type MenuItem = Required<MenuProps>['items'][number]
 
+const LogoIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="10" width="16" height="12" rx="1" fill="white" opacity="0.9"/>
+    <polygon points="3,11 12,4 21,11" fill="#ed8936"/>
+    <rect x="8" y="13" width="3" height="3" rx="0.5" fill="#ed8936"/>
+    <rect x="13" y="13" width="3" height="3" rx="0.5" fill="#ed8936"/>
+    <rect x="10" y="17" width="4" height="5" rx="0.5" fill="#1a365d"/>
+  </svg>
+)
+
 const menuItems: MenuItem[] = [
   {
     key: '/user/dashboard',
@@ -59,7 +69,10 @@ const UserSidebar = () => {
   return (
     <Sider className="user-sidebar" width={220}>
       <div className="logo">
-        <h1>租户端</h1>
+        <div className="logo-icon">
+          <LogoIcon />
+        </div>
+        <h1>租户信息管理</h1>
       </div>
       <Menu
         theme="dark"

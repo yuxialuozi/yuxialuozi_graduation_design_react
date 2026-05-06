@@ -62,7 +62,9 @@ const UserContract = () => {
       title: '合同金额',
       dataIndex: 'amount',
       key: 'amount',
-      render: (amount: number) => `¥${amount.toFixed(2)}`,
+      render: (amount: number) => (
+        <span style={{ fontWeight: 600, color: '#f56565' }}>¥{amount.toFixed(2)}</span>
+      ),
     },
     {
       title: '状态',
@@ -74,9 +76,12 @@ const UserContract = () => {
 
   return (
     <div className="user-contract">
-      <h2>我的合同</h2>
+      <div className="page-header">
+        <h2>我的合同</h2>
+        <p>查看您的所有租赁合同</p>
+      </div>
 
-      <Card>
+      <Card bordered={false} className="content-card">
         <Spin spinning={loading}>
           <Table
             columns={columns}

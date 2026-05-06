@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, Row, Col, Statistic, Table, Progress, Spin, message } from 'antd'
+import { Card, Row, Col, Table, Progress, Spin, message } from 'antd'
 import {
   FileTextOutlined,
   HomeOutlined,
@@ -40,29 +40,36 @@ const UserDashboard = () => {
   const getFeeTrendOption = () => {
     if (!dashboardData?.feeTrend) return {}
     return {
-      title: {
-        text: '近6个月费用趋势',
-        left: 'center',
-      },
       tooltip: {
         trigger: 'axis',
+        formatter: '{b}<br/><span style="display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:#3182ce;"></span>{c}元'
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        top: '10px',
+        containLabel: true
       },
       xAxis: {
         type: 'category',
         data: dashboardData.feeTrend.map((item) => item.month),
+        axisLine: { lineStyle: { color: '#e2e8f0' } },
+        axisLabel: { color: '#718096' }
       },
       yAxis: {
         type: 'value',
-        name: '金额(元)',
+        axisLine: { show: false },
+        axisTick: { show: false },
+        splitLine: { lineStyle: { color: '#f0f0f0' } },
+        axisLabel: { color: '#718096', formatter: '¥{value}' }
       },
       series: [
         {
           name: '已缴费用',
           type: 'bar',
           data: dashboardData.feeTrend.map((item) => item.amount),
-          itemStyle: {
-            color: '#1890ff',
-          },
+          itemStyle: { color: '#3182ce', borderRadius: [4, 4, 0, 0] },
         },
       ],
     }
@@ -73,31 +80,30 @@ const UserDashboard = () => {
     if (!dashboardData) return {}
     const { paidFee, unpaidFee } = dashboardData
     return {
-      title: {
-        text: '费用构成',
-        left: 'center',
-      },
       tooltip: {
         trigger: 'item',
+        formatter: '{b}: {c}元 ({d}%)',
       },
-      legend: {
-        bottom: 0,
-      },
+      legend: { bottom: 0, left: 'center' },
       series: [
         {
           name: '费用状态',
           type: 'pie',
-          radius: '60%',
+          radius: ['45%', '70%'],
+          center: ['50%', '45%'],
           data: [
-            { value: paidFee, name: `已缴 ${paidFee.toFixed(2)}元` },
-            { value: unpaidFee, name: `未缴 ${unpaidFee.toFixed(2)}元` },
+            { value: paidFee, name: `已缴 ${paidFee.toFixed(2)}元`, itemStyle: { color: '#48bb78' } },
+            { value: unpaidFee, name: `未缴 ${unpaidFee.toFixed(2)}元`, itemStyle: { color: '#f56565' } },
           ],
           emphasis: {
             itemStyle: {
               shadowBlur: 10,
               shadowOffsetX: 0,
-              shadowColor: 'rgba(0, 0, 0, 0.5)',
+              shadowColor: 'rgba(0, 0, 0, 0.2)',
             },
+          },
+          label: {
+            formatter: '{b}: {c}元',
           },
         },
       ],
@@ -127,7 +133,7 @@ const UserDashboard = () => {
           overdue: { color: 'orange', text: '逾期' },
         }
         const s = statusMap[status] || { color: 'default', text: status }
-        return <span style={{ color: s.color }}>{s.text}</span>
+        return <span style={{ color: s.color, fontWeight: 500 }}>{s.text}</span>
       }
     },
   ]
@@ -140,103 +146,120 @@ const UserDashboard = () => {
     )
   }
 
+  // 统计卡片配置
+  const stats = [
+    {
+      title: '有效合同',
+      value: dashboardData?.activeContract || 0,
+      suffix: `/ ${dashboardData?.totalContract || 0}`,
+      icon: <FileTextOutlined />,
+      color: '#3182ce',
+    },
+    {
+      title: '租住房间',
+      value: dashboardData?.totalRoom || 0,
+      icon: <HomeOutlined />,
+      color: '#48bb78',
+    },
+    {
+      title: '累计费用',
+      value: `¥${(dashboardData?.totalFee || 0).toFixed(2)}`,
+      icon: <DollarOutlined />,
+      color: '#ed8936',
+      isText: true,
+    },
+    {
+      title: '待处理维修',
+      value: dashboardData?.pendingMaintenance || 0,
+      icon: <ToolOutlined />,
+      color: (dashboardData?.pendingMaintenance || 0) > 0 ? '#f56565' : '#48bb78',
+    },
+  ]
+
   return (
     <div className="user-dashboard">
-      <h2>欢迎回来！</h2>
+      <div className="page-header">
+        <h2>欢迎回来！</h2>
+        <p>这里是您的个人租住信息概览</p>
+      </div>
 
       {/* 统计卡片 */}
-      <Row gutter={16} className="stat-row">
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="有效合同"
-              value={dashboardData?.activeContract || 0}
-              prefix={<FileTextOutlined />}
-              suffix={`/ ${dashboardData?.totalContract || 0}`}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="租住房间"
-              value={dashboardData?.totalRoom || 0}
-              prefix={<HomeOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="累计费用"
-              value={dashboardData?.totalFee || 0}
-              prefix={<DollarOutlined />}
-              precision={2}
-              suffix="元"
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="待处理维修"
-              value={dashboardData?.pendingMaintenance || 0}
-              prefix={<ToolOutlined />}
-              valueStyle={{ color: (dashboardData?.pendingMaintenance || 0) > 0 ? '#faad14' : '#52c41a' }}
-            />
-          </Card>
-        </Col>
+      <Row gutter={[20, 20]} className="stat-row">
+        {stats.map((stat, index) => (
+          <Col xs={24} sm={12} lg={6} key={index}>
+            <Card bordered={false} className="stat-card">
+              <div className="stat-icon" style={{ background: stat.color }}>
+                {stat.icon}
+              </div>
+              <div className="stat-content">
+                <div className="stat-title">{stat.title}</div>
+                {stat.isText ? (
+                  <div className="stat-value" style={{ fontSize: 20 }}>{stat.value}</div>
+                ) : (
+                  <div className="stat-value">
+                    {stat.value}
+                    {stat.suffix && <span style={{ fontSize: 14, color: '#a0aec0', marginLeft: 4 }}>{stat.suffix}</span>}
+                  </div>
+                )}
+              </div>
+            </Card>
+          </Col>
+        ))}
       </Row>
 
-      {/* 费用状态概览 */}
-      <Row gutter={16} className="fee-summary-row">
-        <Col span={12}>
-          <Card title="费用缴纳情况">
-            <Row gutter={16}>
-              <Col span={12}>
-                <div className="fee-item">
-                  <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8 }} />
-                  <span>已缴费用：</span>
-                  <span className="fee-value">¥{(dashboardData?.paidFee || 0).toFixed(2)}</span>
-                </div>
-              </Col>
-              <Col span={12}>
-                <div className="fee-item">
-                  <ExclamationCircleOutlined style={{ color: '#ff4d4f', marginRight: 8 }} />
-                  <span>未缴费用：</span>
-                  <span className="fee-value">¥{(dashboardData?.unpaidFee || 0).toFixed(2)}</span>
-                </div>
-              </Col>
-            </Row>
+      {/* 费用和维修概览 */}
+      <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
+        <Col xs={24} lg={12}>
+          <Card bordered={false} className="summary-card" title="费用缴纳情况">
+            <div className="summary-item">
+              <div className="summary-icon" style={{ background: '#f0fdf4', color: '#48bb78' }}>
+                <CheckCircleOutlined />
+              </div>
+              <span className="summary-label">已缴费用</span>
+              <span className="summary-value" style={{ color: '#48bb78' }}>
+                ¥{(dashboardData?.paidFee || 0).toFixed(2)}
+              </span>
+            </div>
+            <div className="summary-item">
+              <div className="summary-icon" style={{ background: '#fef2f2', color: '#f56565' }}>
+                <ExclamationCircleOutlined />
+              </div>
+              <span className="summary-label">未缴费用</span>
+              <span className="summary-value" style={{ color: '#f56565' }}>
+                ¥{(dashboardData?.unpaidFee || 0).toFixed(2)}
+              </span>
+            </div>
             <Progress
               percent={
                 dashboardData?.totalFee
                   ? (Number(dashboardData.paidFee) / Number(dashboardData.totalFee)) * 100
                   : 0
               }
-              strokeColor="#52c41a"
+              strokeColor="#48bb78"
               format={(percent) => `${percent?.toFixed(1)}%`}
             />
           </Card>
         </Col>
-        <Col span={12}>
-          <Card title="维修工单情况">
-            <Row gutter={16}>
-              <Col span={12}>
-                <div className="fee-item">
-                  <ExclamationCircleOutlined style={{ color: '#faad14', marginRight: 8 }} />
-                  <span>待处理：</span>
-                  <span className="fee-value">{dashboardData?.pendingMaintenance || 0}</span>
-                </div>
-              </Col>
-              <Col span={12}>
-                <div className="fee-item">
-                  <ToolOutlined style={{ color: '#1890ff', marginRight: 8 }} />
-                  <span>总工单：</span>
-                  <span className="fee-value">{dashboardData?.totalMaintenance || 0}</span>
-                </div>
-              </Col>
-            </Row>
+        <Col xs={24} lg={12}>
+          <Card bordered={false} className="summary-card" title="维修工单情况">
+            <div className="summary-item">
+              <div className="summary-icon" style={{ background: '#fffbeb', color: '#ed8936' }}>
+                <ExclamationCircleOutlined />
+              </div>
+              <span className="summary-label">待处理</span>
+              <span className="summary-value" style={{ color: '#ed8936' }}>
+                {dashboardData?.pendingMaintenance || 0}
+              </span>
+            </div>
+            <div className="summary-item">
+              <div className="summary-icon" style={{ background: '#eff6ff', color: '#3182ce' }}>
+                <ToolOutlined />
+              </div>
+              <span className="summary-label">总工单</span>
+              <span className="summary-value" style={{ color: '#3182ce' }}>
+                {dashboardData?.totalMaintenance || 0}
+              </span>
+            </div>
             <Progress
               percent={
                 dashboardData?.totalMaintenance
@@ -245,7 +268,7 @@ const UserDashboard = () => {
                     100
                   : 100
               }
-              strokeColor="#1890ff"
+              strokeColor="#3182ce"
               format={(percent) => `${percent?.toFixed(1)}%`}
             />
           </Card>
@@ -253,21 +276,21 @@ const UserDashboard = () => {
       </Row>
 
       {/* 图表 */}
-      <Row gutter={16} className="chart-row">
-        <Col span={12}>
-          <Card>
-            <ReactECharts option={getFeeTrendOption()} style={{ height: 300 }} notMerge={true} />
+      <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
+        <Col xs={24} lg={12}>
+          <Card bordered={false} className="chart-card" title="费用趋势">
+            <ReactECharts option={getFeeTrendOption()} style={{ height: 280 }} notMerge={true} />
           </Card>
         </Col>
-        <Col span={12}>
-          <Card>
-            <ReactECharts option={getFeeCompositionOption()} style={{ height: 300 }} notMerge={true} />
+        <Col xs={24} lg={12}>
+          <Card bordered={false} className="chart-card" title="费用构成">
+            <ReactECharts option={getFeeCompositionOption()} style={{ height: 280 }} notMerge={true} />
           </Card>
         </Col>
       </Row>
 
       {/* 最近账单 */}
-      <Card title="最近账单" className="recent-fees-card">
+      <Card bordered={false} className="recent-card" title="最近账单">
         <Table
           columns={recentFeesColumns}
           dataSource={dashboardData?.recentFees || []}

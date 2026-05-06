@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Table, Card, Button, Space, Input, Tag, Modal, Form, Select, DatePicker, message } from 'antd'
-import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, UserOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { Table, Card, Button, Space, Input, Tag, Modal, Form, Select, DatePicker, message, Popconfirm } from 'antd'
+import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, UserOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import type { Maintenance } from '@/types'
-import { getMaintenanceList, createMaintenance, updateMaintenance, deleteMaintenance, assignMaintenance, completeMaintenance, type MaintenanceFormData, type MaintenanceQueryParams, type AssignMaintenanceData, type CompleteMaintenanceData, getTenantList } from '@/api'
+import {
+  getMaintenanceList, createMaintenance, updateMaintenance, deleteMaintenance,
+  assignMaintenance, completeMaintenance, cancelMaintenance, getMaintenanceStaff,
+  type MaintenanceFormData, type MaintenanceQueryParams, type CompleteMaintenanceData, getTenantList,
+} from '@/api'
 import dayjs from 'dayjs'
 import './index.less'
 
@@ -25,13 +29,14 @@ const MaintenanceList = () => {
   const [total, setTotal] = useState(0)
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 })
   const [tenants, setTenants] = useState<any[]>([])
+  const [staff, setStaff] = useState<string[]>([])
   const [form] = Form.useForm()
   const [assignForm] = Form.useForm()
   const [completeForm] = Form.useForm()
 
-  // 加载租户列表用于下拉选择
   useEffect(() => {
     loadTenants()
+    loadStaff()
   }, [])
 
   useEffect(() => {
@@ -47,6 +52,16 @@ const MaintenanceList = () => {
       if (err.name !== 'ApiError' && err.name !== 'HttpError') {
         message.error(err.message || '加载租户列表失败')
       }
+    }
+  }
+
+  const loadStaff = async () => {
+    try {
+      const result = await getMaintenanceStaff()
+      setStaff(result)
+    } catch {
+      // ignore errors, fall back to hardcoded options
+      setStaff(['王师傅', '李师傅', '张师傅'])
     }
   }
 
@@ -150,22 +165,44 @@ const MaintenanceList = () => {
       width: 200,
       render: (_, record) => (
         <Space>
-          <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
+          <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} className="action-btn">
             编辑
           </Button>
           {record.status === 'pending' && (
-            <Button type="link" icon={<UserOutlined />} onClick={() => handleAssign(record)}>
+            <Button type="link" icon={<UserOutlined />} onClick={() => handleAssign(record)} className="action-btn">
               分配
             </Button>
           )}
           {record.status === 'processing' && (
-            <Button type="link" icon={<CheckCircleOutlined />} onClick={() => handleComplete(record)}>
+            <Button type="link" icon={<CheckCircleOutlined />} onClick={() => handleComplete(record)} className="action-btn">
               完成
             </Button>
           )}
-          <Button type="link" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)}>
-            删除
-          </Button>
+          {(record.status === 'pending' || record.status === 'processing') && (
+            <Popconfirm
+              title="取消工单"
+              description="确定要取消此维修工单吗？"
+              onConfirm={() => handleCancel(record)}
+              okText="确认"
+              cancelText="取消"
+            >
+              <Button type="link" danger icon={<CloseCircleOutlined />} className="action-btn">
+                取消
+              </Button>
+            </Popconfirm>
+          )}
+          <Popconfirm
+            title="确认删除"
+            description={`确定要删除工单 "${record.ticketNo}" 吗？`}
+            onConfirm={() => handleDelete(record)}
+            okText="删除"
+            cancelText="取消"
+            okButtonProps={{ danger: true }}
+          >
+            <Button type="link" danger icon={<DeleteOutlined />} className="action-btn">
+              删除
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -212,6 +249,19 @@ const MaintenanceList = () => {
     setCompleteTicketId(record.id)
     completeForm.resetFields()
     setCompleteModalVisible(true)
+  }
+
+  const handleCancel = async (record: Maintenance) => {
+    try {
+      await cancelMaintenance(record.id)
+      message.success('工单已取消')
+      fetchData()
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '取消工单失败')
+      }
+    }
   }
 
   const handleModalOk = () => {
@@ -299,58 +349,66 @@ const MaintenanceList = () => {
   }
 
   return (
-    <Card
-      title="维修工单列表"
-      extra={
-        <Space>
-          <Select placeholder="维修类型" allowClear style={{ width: 120 }} onChange={(value) => { setSearchType(value || '') }}>
-            <Select.Option value="electrical">电器</Select.Option>
-            <Select.Option value="plumbing">水管</Select.Option>
-            <Select.Option value="appliance">家电</Select.Option>
-            <Select.Option value="furniture">家具</Select.Option>
-            <Select.Option value="other">其他</Select.Option>
-          </Select>
-          <Select placeholder="状态" allowClear style={{ width: 120 }} onChange={(value) => { setSearchStatus(value || '') }}>
-            <Select.Option value="pending">待处理</Select.Option>
-            <Select.Option value="processing">处理中</Select.Option>
-            <Select.Option value="completed">已完成</Select.Option>
-            <Select.Option value="cancelled">已取消</Select.Option>
-          </Select>
-          <Select placeholder="优先级" allowClear style={{ width: 120 }} onChange={(value) => { setSearchPriority(value || '') }}>
-            <Select.Option value="urgent">紧急</Select.Option>
-            <Select.Option value="high">高</Select.Option>
-            <Select.Option value="medium">中</Select.Option>
-            <Select.Option value="low">低</Select.Option>
-          </Select>
-          <Input.Search
-            placeholder="搜索工单号"
-            allowClear
-            style={{ width: 200 }}
-            prefix={<SearchOutlined />}
-            onSearch={handleSearch}
-          />
+    <div className="maintenance-list">
+      <div className="page-header">
+        <div className="page-title">
+          <h2>维修管理</h2>
+          <p>管理所有维修工单，包括分配维修人员和标记完成</p>
+        </div>
+      </div>
+
+      <Card bordered={false} className="content-card">
+        <div className="search-bar">
+          <Space wrap>
+            <Select placeholder="维修类型" allowClear style={{ width: 120 }} onChange={(value) => { setSearchType(value || ''); setPagination({ ...pagination, current: 1 }) }}>
+              <Select.Option value="electrical">电器</Select.Option>
+              <Select.Option value="plumbing">水管</Select.Option>
+              <Select.Option value="appliance">家电</Select.Option>
+              <Select.Option value="furniture">家具</Select.Option>
+              <Select.Option value="other">其他</Select.Option>
+            </Select>
+            <Select placeholder="状态" allowClear style={{ width: 120 }} onChange={(value) => { setSearchStatus(value || ''); setPagination({ ...pagination, current: 1 }) }}>
+              <Select.Option value="pending">待处理</Select.Option>
+              <Select.Option value="processing">处理中</Select.Option>
+              <Select.Option value="completed">已完成</Select.Option>
+              <Select.Option value="cancelled">已取消</Select.Option>
+            </Select>
+            <Select placeholder="优先级" allowClear style={{ width: 120 }} onChange={(value) => { setSearchPriority(value || ''); setPagination({ ...pagination, current: 1 }) }}>
+              <Select.Option value="urgent">紧急</Select.Option>
+              <Select.Option value="high">高</Select.Option>
+              <Select.Option value="medium">中</Select.Option>
+              <Select.Option value="low">低</Select.Option>
+            </Select>
+            <Input.Search
+              placeholder="搜索工单号"
+              allowClear
+              style={{ width: 200 }}
+              prefix={<SearchOutlined />}
+              onSearch={handleSearch}
+            />
+          </Space>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
             新建工单
           </Button>
-        </Space>
-      }
-    >
-      <Table
-        columns={columns}
-        dataSource={data}
-        rowKey="id"
-        loading={loading}
-        scroll={{ x: 1400 }}
-        onChange={handleTableChange}
-        pagination={{
-          current: pagination.current,
-          pageSize: pagination.pageSize,
-          total,
-          showTotal: (totalCount) => `共 ${totalCount} 条`,
-          showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50'],
-        }}
-      />
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey="id"
+          loading={loading}
+          scroll={{ x: 1400 }}
+          onChange={handleTableChange}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total,
+            showTotal: (totalCount) => `共 ${totalCount} 条`,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50'],
+          }}
+        />
+      </Card>
 
       <Modal
         title={editingId ? '编辑维修工单' : '新建维修工单'}
@@ -368,9 +426,9 @@ const MaintenanceList = () => {
           >
             <Select placeholder="请选择租户">
               {tenants.map((tenant: any) => (
-                <Option key={tenant.id} value={tenant.id}>
+                <Select.Option key={tenant.id} value={tenant.id}>
                   {tenant.name} {tenant.contactPerson && `(${tenant.contactPerson})`}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -430,10 +488,18 @@ const MaintenanceList = () => {
             label="维修人员"
             rules={[{ required: true, message: '请选择维修人员' }]}
           >
-            <Select placeholder="请选择维修人员">
-              <Select.Option value="王师傅">王师傅</Select.Option>
-              <Select.Option value="李师傅">李师傅</Select.Option>
-              <Select.Option value="张师傅">张师傅</Select.Option>
+            <Select
+              placeholder="请选择维修人员"
+              showSearch
+              filterOption={(input, option) =>
+                (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {staff.map((s) => <Select.Option key={s} value={s}>{s}</Select.Option>)}
+              {/* Fallback hardcoded options if API returns nothing */}
+              {!staff.includes('王师傅') && <Select.Option value="王师傅">王师傅</Select.Option>}
+              {!staff.includes('李师傅') && <Select.Option value="李师傅">李师傅</Select.Option>}
+              {!staff.includes('张师傅') && <Select.Option value="张师傅">张师傅</Select.Option>}
             </Select>
           </Form.Item>
         </Form>
@@ -455,7 +521,7 @@ const MaintenanceList = () => {
           </Form.Item>
         </Form>
       </Modal>
-    </Card>
+    </div>
   )
 }
 

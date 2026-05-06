@@ -4,9 +4,27 @@ export interface UserInfo {
   username: string
   nickname: string
   avatar?: string
+  phone?: string
+  email?: string
   role: string
+  status?: string
   permissions: string[]
   tenantId?: number // 关联的租户ID
+}
+
+// 系统用户（管理端用户管理）
+export interface SystemUser {
+  id: number
+  username: string
+  nickname?: string
+  avatar?: string
+  phone?: string
+  email?: string
+  role: 'admin' | 'user'
+  status: 'active' | 'inactive'
+  tenantId?: number
+  createdAt: string
+  updatedAt: string
 }
 
 // 登录请求参数

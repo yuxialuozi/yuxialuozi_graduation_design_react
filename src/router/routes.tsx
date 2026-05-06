@@ -13,6 +13,8 @@ const FeeList = lazy(() => import('@/pages/Fee/List'))
 const MaintenanceList = lazy(() => import('@/pages/Maintenance/List'))
 const Report = lazy(() => import('@/pages/Report'))
 const AI = lazy(() => import('@/pages/AI'))
+const UserManagement = lazy(() => import('@/pages/Users/List'))
+const Profile = lazy(() => import('@/pages/Profile'))
 
 // 用户端页面组件
 const UserDashboard = lazy(() => import('@/pages/User/Dashboard'))
@@ -38,6 +40,15 @@ export const routes: RouteObject[] = [
       {
         path: 'dashboard',
         element: <Dashboard />,
+      },
+      {
+        path: 'users',
+        children: [
+          {
+            path: 'list',
+            element: <UserManagement />,
+          },
+        ],
       },
       {
         path: 'tenant',
@@ -91,6 +102,10 @@ export const routes: RouteObject[] = [
       {
         path: 'ai',
         element: <AI />,
+      },
+      {
+        path: 'profile',
+        element: <Profile />,
       },
     ],
   },

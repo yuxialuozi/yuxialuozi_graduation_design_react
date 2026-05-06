@@ -5,29 +5,86 @@
   padding: 0 24px;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 99;
 
   .header-left {
     display: flex;
     align-items: center;
 
     .trigger {
-      font-size: 18px;
+      font-size: 20px;
       cursor: pointer;
       transition: color 0.3s;
-      padding: 0 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: #5a6c7d;
 
       &:hover {
-        color: #1890ff;
+        color: #3182ce;
+        background: #f0f7ff;
       }
+    }
+
+    .page-title {
+      margin-left: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a365d;
     }
   }
 
   .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .header-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #5a6c7d;
+      transition: all 0.3s;
+      position: relative;
+
+      &:hover {
+        background: #f0f7ff;
+        color: #3182ce;
+      }
+
+      .ant-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+      }
+    }
+
     .user-info {
       cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &:hover {
+        background: #f0f7ff;
+      }
+
+      .ant-avatar {
+        background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+      }
 
       .username {
-        margin-left: 8px;
+        font-weight: 500;
+        color: #1a365d;
       }
     }
   }

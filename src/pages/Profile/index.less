@@ -1,0 +1,68 @@
+.profile-page {
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    .page-title {
+      h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1a365d;
+        margin: 0 0 4px;
+      }
+
+      p {
+        color: #718096;
+        margin: 0;
+        font-size: 14px;
+      }
+    }
+  }
+
+  .content-card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    :global {
+      .ant-tabs-nav {
+        margin-bottom: 24px;
+      }
+
+      .ant-tabs-tab {
+        font-size: 15px;
+        padding: 12px 0;
+      }
+
+      .ant-form-item-label > label {
+        color: #1a365d;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .profile-form-wrapper,
+  .password-form-wrapper {
+    max-width: 600px;
+  }
+
+  .profile-form,
+  .password-form {
+    padding: 8px 0;
+  }
+
+  :global {
+    .ant-btn-primary {
+      background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+      border: none;
+      box-shadow: 0 2px 8px rgba(49, 130, 206, 0.3);
+
+      &:hover {
+        background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+        transform: translateY(-1px);
+      }
+    }
+  }
+}

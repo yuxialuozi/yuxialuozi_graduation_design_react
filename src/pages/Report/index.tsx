@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Card, Row, Col, DatePicker, Select, Statistic, Table, Spin, message } from 'antd'
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons'
+import { Card, Row, Col, DatePicker, Table, Spin, message } from 'antd'
 import ReactECharts from 'echarts-for-react'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs, { Dayjs } from 'dayjs'
@@ -17,10 +16,10 @@ const Report = () => {
     dayjs(`${currentYear}-01-01`),
     dayjs(`${currentYear}-12-31`),
   ])
-  const [incomeData, setIncomeData] = useState<{ byDay: Array<{ day: string; amount: number }> }>({})
-  const [occupancyData, setOccupancyData] = useState<{ totalRooms: number; occupancyRate: number }>({})
+  const [incomeData, setIncomeData] = useState<{ byDay: Array<{ day: string; amount: number }> }>({ byDay: [] })
+  const [occupancyData, setOccupancyData] = useState<{ totalRooms: number; occupancyRate: number }>({ totalRooms: 0, occupancyRate: 0 })
   const [feeCompositionData, setFeeCompositionData] = useState<Array<{ feeType: string; amount: number }>>([])
-  const [maintenanceStatsData, setMaintenanceStatsData] = useState<{ byStatus: Array<{ status: string; count: number }> }>({})
+  const [maintenanceStatsData, setMaintenanceStatsData] = useState<{ byStatus: Array<{ status: string; count: number }> }>({ byStatus: [] })
   const [tenantRankingData, setTenantRankingData] = useState<Array<{ tenantId: number; tenantName: string; amount: number }>>([])
 
   useEffect(() => {
@@ -53,10 +52,10 @@ const Report = () => {
         }),
       ])
 
-      setIncomeData(income || { byDay: [] })
-      setOccupancyData(occupancy || { totalRooms: 0, occupancyRate: 0 })
+      setIncomeData(income?.[0] || { byDay: [] })
+      setOccupancyData(occupancy?.[0] || { totalRooms: 0, occupancyRate: 0 })
       setFeeCompositionData(feeComp || [])
-      setMaintenanceStatsData(maintenance || { byStatus: [] })
+      setMaintenanceStatsData(maintenance?.[0] || { byStatus: [] })
       setTenantRankingData(ranking || [])
     } catch (error: unknown) {
       const err = error as Error
@@ -68,7 +67,7 @@ const Report = () => {
     }
   }
 
-  const handleDateRangeChange = (dates: [Dayjs, Dayjs] | null) => {
+  const handleDateRangeChange = (dates: any) => {
     if (dates && dates[0] && dates[1]) {
       setDateRange(dates)
     }
@@ -76,41 +75,58 @@ const Report = () => {
 
   // 收入趋势图配置
   const incomeTrendOption: any = {
-    title: { text: '收入趋势分析', left: 'center' },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'cross' },
-      formatter: '{b}<br/>{c}元'
+      formatter: '{b}<br/><span style="display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:#3182ce;"></span>{c}元'
     },
-    legend: { bottom: 10, data: ['收入'] },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      top: '20px',
+      containLabel: true
+    },
     xAxis: {
       type: 'category',
       data: incomeData?.byDay?.length > 0 ? incomeData.byDay.map((item: any) => item.day) : [''],
-      name: '日期',
-      nameLocation: 'middle',
-      nameTextStyle: { fontSize: 14, fontWeight: 'bold' }
+      boundaryGap: false,
+      axisLine: { lineStyle: { color: '#e2e8f0' } },
+      axisLabel: { color: '#718096' }
     },
     yAxis: {
       type: 'value',
-      name: '金额（元）',
-      nameLocation: 'middle',
-      nameTextStyle: { fontSize: 14, fontWeight: 'bold' },
-      axisLabel: { formatter: '¥{value}' }
+      axisLine: { show: false },
+      axisTick: { show: false },
+      splitLine: { lineStyle: { color: '#f0f0f0' } },
+      axisLabel: { color: '#718096', formatter: '¥{value}' }
     },
     series: [
       {
         name: '收入',
         type: 'line',
         smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
         data: incomeData?.byDay?.length > 0 ? incomeData.byDay.map((item: any) => item.amount) : [0],
-        itemStyle: { color: '#1890ff' },
+        itemStyle: { color: '#3182ce' },
+        lineStyle: { width: 2 },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(49, 130, 206, 0.3)' },
+              { offset: 1, color: 'rgba(49, 130, 206, 0.02)' }
+            ]
+          }
+        },
       },
     ],
   }
 
   // 房间出租率趋势
   const occupancyTrendOption: any = {
-    title: { text: '房间出租率统计', left: 'center' },
     tooltip: {
       trigger: 'item',
       formatter: '{b}: {c}%',
@@ -119,43 +135,59 @@ const Report = () => {
       {
         name: '出租率',
         type: 'gauge',
-        detail: { formatter: '{value}%' },
+        detail: { formatter: '{value}%', fontSize: 20, fontWeight: 'bold', color: '#3182ce' },
         data: [
           {
             value: occupancyData?.occupancyRate ? Number(occupancyData.occupancyRate.toFixed(2)) : 0,
             name: '当前出租率',
           },
         ],
-        itemStyle: { color: '#52c41a' },
+        itemStyle: { color: '#3182ce' },
+        axisLine: {
+          lineStyle: {
+            width: 20,
+            color: [
+              [0.3, '#f56565'],
+              [0.7, '#ed8936'],
+              [1, '#48bb78']
+            ]
+          }
+        },
       },
     ],
   }
 
   // 费用构成图配置
   const feeCompositionOption: any = {
-    title: { text: '费用构成分析', left: 'center' },
     tooltip: {
       trigger: 'item',
       formatter: '{b}: {c} ({d}%)',
     },
-    legend: { bottom: 10 },
+    legend: { bottom: 0, left: 'center' },
     series: [
       {
         name: '费用构成',
         type: 'pie',
-        radius: ['40%', '70%'],
+        radius: ['45%', '70%'],
+        center: ['50%', '45%'],
         data: feeCompositionData.length > 0 ? feeCompositionData.map((item: any) => ({
           value: item.amount,
           name: item.feeType === 'rent' ? '租金' :
                 item.feeType === 'water' ? '水费' :
                 item.feeType === 'electricity' ? '电费' :
-                item.feeType === 'property' ? '物业费' : '其他'
+                item.feeType === 'property' ? '物业费' : '其他',
+          itemStyle: {
+            color: item.feeType === 'rent' ? '#3182ce' :
+                   item.feeType === 'water' ? '#13c2c2' :
+                   item.feeType === 'electricity' ? '#ed8936' :
+                   item.feeType === 'property' ? '#722ed1' : '#8c8c8c'
+          }
         })) : [{ value: 0, name: '暂无数据' }],
         emphasis: {
           itemStyle: {
             shadowBlur: 10,
             shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)',
+            shadowColor: 'rgba(0, 0, 0, 0.2)',
           },
         },
       },
@@ -164,10 +196,16 @@ const Report = () => {
 
   // 维修统计图配置
   const maintenanceStatsOption: any = {
-    title: { text: '维修工单统计', left: 'center' },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' }
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      top: '20px',
+      containLabel: true
     },
     xAxis: {
       type: 'category',
@@ -177,22 +215,30 @@ const Report = () => {
         item.status === 'completed' ? '已完成' :
         item.status === 'cancelled' ? '已取消' : item.status
       ) : [''],
-      name: '工单状态',
-      nameLocation: 'middle',
-      nameTextStyle: { fontSize: 14, fontWeight: 'bold' }
+      axisLine: { lineStyle: { color: '#e2e8f0' } },
+      axisLabel: { color: '#718096' }
     },
     yAxis: {
       type: 'value',
-      name: '工单数量',
-      nameLocation: 'middle',
-      nameTextStyle: { fontSize: 14, fontWeight: 'bold' }
+      axisLine: { show: false },
+      axisTick: { show: false },
+      splitLine: { lineStyle: { color: '#f0f0f0' } },
+      axisLabel: { color: '#718096' }
     },
     series: [
       {
         name: '工单数量',
         type: 'bar',
-        data: maintenanceStatsData?.byStatus?.length > 0 ? maintenanceStatsData.byStatus.map((item: any) => item.count) : [0],
-        itemStyle: { color: '#1890ff' },
+        barWidth: '50%',
+        data: maintenanceStatsData?.byStatus?.length > 0 ? maintenanceStatsData.byStatus.map((item: any) => ({
+          value: item.count,
+          itemStyle: {
+            color: item.status === 'pending' ? '#ed8936' :
+                   item.status === 'processing' ? '#3182ce' :
+                   item.status === 'completed' ? '#48bb78' : '#a0aec0',
+            borderRadius: [4, 4, 0, 0]
+          }
+        })) : [0],
       },
     ],
   }
@@ -212,51 +258,54 @@ const Report = () => {
   return (
     <Spin spinning={loading}>
       <div className="report">
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          <Col xs={24}>
-            <Card bordered={false}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <span>统计时间：</span>
-                <RangePicker
-                  value={dateRange}
-                  onChange={handleDateRangeChange}
-                  format="YYYY-MM-DD"
-                  allowClear={false}
-                />
-              </div>
-            </Card>
-          </Col>
-        </Row>
+        <div className="page-header">
+          <div className="page-title">
+            <h2>数据报表</h2>
+            <p>查看各项业务数据统计和分析报表</p>
+          </div>
+        </div>
 
-        <Row gutter={[16, 16]}>
+        <Card bordered={false} className="filter-card">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <span style={{ color: '#1a365d', fontWeight: 500 }}>统计时间：</span>
+            <RangePicker
+              value={dateRange}
+              onChange={handleDateRangeChange}
+              format="YYYY-MM-DD"
+              allowClear={false}
+            />
+          </div>
+        </Card>
+
+        <Row gutter={[20, 20]}>
           <Col xs={24} lg={12}>
-            <Card title="收入趋势" bordered={false}>
+            <Card bordered={false} className="chart-card" title="收入趋势">
               <ReactECharts option={incomeTrendOption} style={{ height: 350 }} notMerge={true} />
             </Card>
           </Col>
           <Col xs={24} lg={12}>
-            <Card title="房间出租率" bordered={false}>
+            <Card bordered={false} className="chart-card" title="房间出租率">
               <ReactECharts option={occupancyTrendOption} style={{ height: 350 }} notMerge={true} />
             </Card>
           </Col>
         </Row>
 
-        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
           <Col xs={24} lg={12}>
-            <Card title="费用构成" bordered={false}>
+            <Card bordered={false} className="chart-card" title="费用构成">
               <ReactECharts option={feeCompositionOption} style={{ height: 350 }} notMerge={true} />
             </Card>
           </Col>
           <Col xs={24} lg={12}>
-            <Card title="维修工单统计" bordered={false}>
+            <Card bordered={false} className="chart-card" title="维修工单统计">
               <ReactECharts option={maintenanceStatsOption} style={{ height: 350 }} notMerge={true} />
             </Card>
           </Col>
         </Row>
 
-        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
           <Col xs={24}>
-            <Card title="租户费用排名" bordered={false}>
+            <Card bordered={false} className="table-card" title="租户费用排名">
               <Table
                 columns={rankingColumns}
                 dataSource={tenantRankingData}

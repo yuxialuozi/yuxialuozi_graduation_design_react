@@ -1,21 +1,75 @@
 .user-ai-page {
+  .page-header {
+    margin-bottom: 24px;
+
+    h2 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a365d;
+      margin: 0 0 4px;
+    }
+
+    p {
+      color: #718096;
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+
   .ai-chat-card {
-    height: calc(100vh - 180px);
+    height: calc(100vh - 220px);
+    min-height: 500px;
     display: flex;
     flex-direction: column;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 
-    .ant-card-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 0;
-      overflow: hidden;
+    :global {
+      .ant-card-head {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 16px 24px;
+
+        .ant-card-head-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1a365d;
+        }
+      }
+
+      .ant-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        overflow: hidden;
+      }
     }
   }
 
   .ai-info-card,
   .ai-tips-card {
     margin-bottom: 16px;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    :global {
+      .ant-card-head {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 16px 20px;
+
+        .ant-card-head-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1a365d;
+        }
+      }
+
+      .ant-card-body {
+        padding: 16px 20px;
+      }
+    }
 
     .ai-feature {
       margin-bottom: 16px;
@@ -32,13 +86,13 @@
         margin: 0 0 8px;
         font-size: 14px;
         font-weight: 600;
-        color: #1890ff;
+        color: #3182ce;
       }
 
       p {
         margin: 0;
         font-size: 13px;
-        color: #666;
+        color: #718096;
         line-height: 1.6;
       }
     }
@@ -50,7 +104,7 @@
       li {
         margin-bottom: 8px;
         font-size: 13px;
-        color: #666;
+        color: #718096;
         line-height: 1.6;
       }
     }

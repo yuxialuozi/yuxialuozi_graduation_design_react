@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Table, Card, Button, Space, Input, Tag, Modal, Form, message } from 'antd'
+import { Table, Card, Button, Space, Input, Modal, Form, Select, message, Switch, Popconfirm } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import type { Tenant } from '@/types'
@@ -11,15 +11,15 @@ const TenantList = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [searchKeyword, setSearchKeyword] = useState('')
-  const [searchStatus, setSearchStatus] = useState('')
   const [data, setData] = useState<Tenant[]>([])
   const [total, setTotal] = useState(0)
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 })
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [form] = Form.useForm()
 
   useEffect(() => {
     fetchData()
-  }, [pagination.current, pagination.pageSize, searchKeyword, searchStatus])
+  }, [pagination.current, pagination.pageSize, searchKeyword])
 
   const fetchData = async () => {
     try {
@@ -29,7 +29,6 @@ const TenantList = () => {
         pageSize: pagination.pageSize,
       }
       if (searchKeyword) params.keyword = searchKeyword
-      if (searchStatus) params.status = searchStatus
 
       const result = await getTenantList(params)
       setData(result.list)
@@ -44,6 +43,48 @@ const TenantList = () => {
     }
   }
 
+  const handleStatusChange = async (record: Tenant, checked: boolean) => {
+    try {
+      await updateTenant(record.id, { ...record, status: checked ? 'active' : 'inactive' })
+      message.success(checked ? '租户已启用' : '租户已停用')
+      fetchData()
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '状态更新失败')
+      }
+    }
+  }
+
+  const handleBatchDelete = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('请先选择要删除的租户')
+      return
+    }
+    Modal.confirm({
+      title: '批量删除确认',
+      content: `确定要删除选中的 ${selectedRowKeys.length} 个租户吗？此操作不可撤销。`,
+      okText: '确认删除',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          setLoading(true)
+          await Promise.all(selectedRowKeys.map((id) => deleteTenant(id as number)))
+          message.success('批量删除成功')
+          setSelectedRowKeys([])
+          fetchData()
+        } catch (error: unknown) {
+          const err = error as Error
+          if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+            message.error(err.message || '批量删除失败')
+          }
+        } finally {
+          setLoading(false)
+        }
+      },
+    })
+  }
+
   const columns: ColumnsType<Tenant> = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
     { title: '租户名称', dataIndex: 'name', key: 'name' },
@@ -54,28 +95,47 @@ const TenantList = () => {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={status === 'active' ? 'green' : 'red'}>
-          {status === 'active' ? '正常' : '已停用'}
-        </Tag>
+      render: (status: string, record) => (
+        <Switch
+          checked={status === 'active'}
+          checkedChildren="启用"
+          unCheckedChildren="停用"
+          onChange={(checked) => handleStatusChange(record, checked)}
+          loading={loading}
+        />
       ),
     },
-    { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt' },
+    { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 180 },
     {
       title: '操作',
       key: 'action',
+      width: 150,
       render: (_, record) => (
         <Space>
-          <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
+          <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} className="action-btn">
             编辑
           </Button>
-          <Button type="link" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)}>
-            删除
-          </Button>
+          <Popconfirm
+            title="确认删除"
+            description={`确定要删除租户 "${record.name}" 吗？`}
+            onConfirm={() => handleDelete(record)}
+            okText="删除"
+            cancelText="取消"
+            okButtonProps={{ danger: true }}
+          >
+            <Button type="link" danger icon={<DeleteOutlined />} className="action-btn">
+              删除
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
   ]
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
+  }
 
   const handleAdd = () => {
     setEditingId(null)
@@ -89,23 +149,17 @@ const TenantList = () => {
     setModalVisible(true)
   }
 
-  const handleDelete = (record: Tenant) => {
-    Modal.confirm({
-      title: '确认删除',
-      content: `确定要删除租户 "${record.name}" 吗？`,
-      onOk: async () => {
-        try {
-          await deleteTenant(record.id)
-          message.success('删除成功')
-          fetchData()
-        } catch (error: unknown) {
-          const err = error as Error
-          if (err.name !== 'ApiError' && err.name !== 'HttpError') {
-            message.error(err.message || '删除失败')
-          }
-        }
-      },
-    })
+  const handleDelete = async (record: Tenant) => {
+    try {
+      await deleteTenant(record.id)
+      message.success('删除成功')
+      fetchData()
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '删除失败')
+      }
+    }
   }
 
   const handleModalOk = () => {
@@ -143,45 +197,65 @@ const TenantList = () => {
   }
 
   const handleTableChange = (pag: any) => {
-    setPagination({
-      current: pag.current,
-      pageSize: pag.pageSize,
-    })
+    setPagination({ current: pag.current, pageSize: pag.pageSize })
   }
 
   return (
-    <Card
-      title="租户列表"
-      extra={
-        <Space>
-          <Input.Search
-            placeholder="搜索租户"
-            allowClear
-            style={{ width: 200 }}
-            prefix={<SearchOutlined />}
-            onSearch={handleSearch}
-          />
+    <div className="tenant-list">
+      <div className="page-header">
+        <div className="page-title">
+          <h2>租户管理</h2>
+          <p>管理所有租户信息，包括新增、编辑和删除操作</p>
+        </div>
+      </div>
+
+      <Card bordered={false} className="content-card">
+        <div className="search-bar">
+          <Space>
+            <Input.Search
+              placeholder="搜索租户名称、联系人或电话"
+              allowClear
+              style={{ width: 300 }}
+              prefix={<SearchOutlined />}
+              onSearch={handleSearch}
+            />
+            {selectedRowKeys.length > 0 && (
+              <Popconfirm
+                title="批量删除确认"
+                description={`确定要删除选中的 ${selectedRowKeys.length} 个租户吗？`}
+                onConfirm={handleBatchDelete}
+                okText="确认删除"
+                cancelText="取消"
+                okButtonProps={{ danger: true }}
+              >
+                <Button danger icon={<DeleteOutlined />}>
+                  批量删除({selectedRowKeys.length})
+                </Button>
+              </Popconfirm>
+            )}
+          </Space>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
             新增租户
           </Button>
-        </Space>
-      }
-    >
-      <Table
-        columns={columns}
-        dataSource={data}
-        rowKey="id"
-        loading={loading}
-        onChange={handleTableChange}
-        pagination={{
-          current: pagination.current,
-          pageSize: pagination.pageSize,
-          total,
-          showTotal: (totalCount) => `共 ${totalCount} 条`,
-          showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50'],
-        }}
-      />
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey="id"
+          loading={loading}
+          onChange={handleTableChange}
+          rowSelection={rowSelection}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total,
+            showTotal: (totalCount) => `共 ${totalCount} 条`,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50'],
+          }}
+        />
+      </Card>
 
       <Modal
         title={editingId ? '编辑租户' : '新增租户'}
@@ -225,14 +299,14 @@ const TenantList = () => {
             label="状态"
             initialValue="active"
           >
-            <select>
-              <option value="active">正常</option>
-              <option value="inactive">已停用</option>
-            </select>
+            <Select placeholder="请选择状态">
+              <Select.Option value="active">正常</Select.Option>
+              <Select.Option value="inactive">已停用</Select.Option>
+            </Select>
           </Form.Item>
         </Form>
       </Modal>
-    </Card>
+    </div>
   )
 }
 

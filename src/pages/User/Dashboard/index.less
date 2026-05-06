@@ -1,6 +1,19 @@
 .user-dashboard {
-  h2 {
+  .page-header {
     margin-bottom: 24px;
+
+    h2 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a365d;
+      margin: 0 0 4px;
+    }
+
+    p {
+      color: #718096;
+      margin: 0;
+      font-size: 14px;
+    }
   }
 
   .loading-container {
@@ -10,29 +23,178 @@
     min-height: 400px;
   }
 
-  .stat-row {
-    margin-bottom: 16px;
-  }
+  .stat-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 
-  .fee-summary-row {
-    margin-bottom: 16px;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
 
-    .fee-item {
-      margin-bottom: 12px;
-      font-size: 14px;
+    :global {
+      .ant-card-body {
+        display: flex;
+        align-items: center;
+        padding: 24px;
+      }
+    }
 
-      .fee-value {
-        font-weight: 600;
-        font-size: 16px;
+    .stat-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px;
+      font-size: 24px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .stat-content {
+      flex: 1;
+
+      .stat-title {
+        font-size: 13px;
+        color: #718096;
+        margin-bottom: 6px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1a365d;
+        line-height: 1.2;
       }
     }
   }
 
-  .chart-row {
-    margin-bottom: 16px;
+  .summary-card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    height: 100%;
+
+    :global {
+      .ant-card-head {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 16px 20px;
+
+        .ant-card-head-title {
+          font-size: 15px;
+          font-weight: 600;
+          color: #1a365d;
+        }
+      }
+
+      .ant-card-body {
+        padding: 20px;
+      }
+    }
+
+    .summary-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .summary-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        font-size: 14px;
+      }
+
+      .summary-label {
+        flex: 1;
+        color: #5a6c7d;
+        font-size: 14px;
+      }
+
+      .summary-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a365d;
+      }
+    }
   }
 
-  .recent-fees-card {
-    margin-top: 16px;
+  .chart-card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    :global {
+      .ant-card-head {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 16px 20px;
+
+        .ant-card-head-title {
+          font-size: 15px;
+          font-weight: 600;
+          color: #1a365d;
+        }
+      }
+
+      .ant-card-body {
+        padding: 16px;
+      }
+    }
+  }
+
+  .recent-card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    margin-top: 20px;
+
+    :global {
+      .ant-card-head {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 16px 20px;
+
+        .ant-card-head-title {
+          font-size: 15px;
+          font-weight: 600;
+          color: #1a365d;
+        }
+      }
+
+      .ant-card-body {
+        padding: 0;
+      }
+
+      .ant-table {
+        .ant-table-thead > tr > th {
+          background: #f8fafc;
+          color: #5a6c7d;
+          font-weight: 600;
+          font-size: 13px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+
+        .ant-table-tbody > tr > td {
+          color: #1a365d;
+          padding: 14px 20px;
+        }
+
+        .ant-table-tbody > tr:hover > td {
+          background: #f8fafc;
+        }
+      }
+    }
   }
 }

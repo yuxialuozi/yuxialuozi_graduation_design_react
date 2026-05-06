@@ -1,5 +1,5 @@
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios'
-import { message } from 'antd'
+import { Modal } from 'antd'
 import type { ApiResponse } from '@/types'
 
 // 创建 axios 实例
@@ -38,7 +38,13 @@ request.interceptors.response.use(
     }
     // 业务错误，data.message 包含后端返回的错误信息
     const errorMsg = data.message || '请求失败'
-    message.error(errorMsg)
+    // 重要业务错误使用卡片式弹窗显示
+    Modal.error({
+      title: '操作失败',
+      content: errorMsg,
+      okText: '确定',
+      maskClosable: true,
+    })
     // 将错误信息附加到 Error 对象，方便组件获取
     const err = new Error(errorMsg)
     err.name = 'ApiError'
@@ -51,38 +57,62 @@ request.interceptors.response.use(
       const errorMsg = data?.message
       switch (status) {
         case 401:
-          message.error(errorMsg || '登录已过期，请重新登录')
-          localStorage.removeItem('token')
-          window.location.href = '/login'
+          Modal.warning({
+            title: '登录已过期',
+            content: errorMsg || '请重新登录以继续操作',
+            okText: '确定',
+            onOk: () => {
+              localStorage.removeItem('token')
+              window.location.href = '/login'
+            },
+          })
           break
         case 403:
-          message.error(errorMsg || '没有权限访问此资源')
+          Modal.error({
+            title: '没有权限',
+            content: errorMsg || '您没有权限访问此资源',
+            okText: '确定',
+          })
           break
         case 404:
-          message.error(errorMsg || '请求的资源不存在')
+          Modal.error({
+            title: '资源不存在',
+            content: errorMsg || '请求的资源不存在',
+            okText: '确定',
+          })
           break
         case 500:
-          message.error(errorMsg || '服务器错误')
+          Modal.error({
+            title: '服务器错误',
+            content: errorMsg || '服务器发生错误，请稍后重试',
+            okText: '确定',
+          })
           break
         case 400:
-          message.error(errorMsg || '请求参数错误')
+          Modal.error({
+            title: '请求参数错误',
+            content: errorMsg || '请检查输入的参数是否正确',
+            okText: '确定',
+          })
           break
         default:
-          message.error(errorMsg || '请求失败')
+          Modal.error({
+            title: '请求失败',
+            content: errorMsg || '发生未知错误，请稍后重试',
+            okText: '确定',
+          })
       }
       const err = new Error(errorMsg || '请求失败')
       err.name = 'HttpError'
       return Promise.reject(err)
     } else {
-      // 网络错误（CORS / 超时 / 连接失败）或后端返回了非 0 code 但 HTTP 200
-      // axios 没有正确解析响应，可能是网络问题或响应格式异常
-      let errorMsg = '网络错误，请检查网络连接'
-      // 检查 error.data 是否有业务错误信息（HTTP 200 但 code 非 0 的情况）
-      if (error.data && typeof error.data === 'object' && 'message' in (error.data as object)) {
-        errorMsg = (error.data as ApiResponse).message || errorMsg
-      }
-      message.error(errorMsg)
-      const err = new Error(errorMsg)
+      // 网络错误（CORS / 超时 / 连接失败）
+      Modal.error({
+        title: '网络错误',
+        content: '无法连接到服务器，请检查网络连接',
+        okText: '确定',
+      })
+      const err = new Error('网络错误，请检查网络连接')
       err.name = 'NetworkError'
       return Promise.reject(err)
     }
@@ -95,9 +125,16 @@ export const http = {
     return request.get(url, config).then((res) => res.data.data)
   },
   post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+    // 如果没有data，不传递data参数，避免发送 undefined/null 导致后端解析失败
+    if (data === undefined || data === null) {
+      return request.post(url, undefined, config).then((res) => res.data.data)
+    }
     return request.post(url, data, config).then((res) => res.data.data)
   },
   put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+    if (data === undefined || data === null) {
+      return request.put(url, undefined, config).then((res) => res.data.data)
+    }
     return request.put(url, data, config).then((res) => res.data.data)
   },
   delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {

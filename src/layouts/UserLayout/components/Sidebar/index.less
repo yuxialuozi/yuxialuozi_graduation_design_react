@@ -5,19 +5,77 @@
   bottom: 0;
   height: 100vh;
   overflow-y: auto;
-  background: #001529;
+  background: linear-gradient(180deg, #1a365d 0%, #2c5282 100%);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  z-index: 100;
 
   .logo {
     height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0 16px;
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
 
     h1 {
       color: #fff;
-      font-size: 18px;
+      font-size: 16px;
+      font-weight: 600;
       margin: 0;
+      letter-spacing: 1px;
+    }
+  }
+
+  :global {
+    .ant-menu {
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.85);
+
+      .ant-menu-item {
+        margin: 4px 12px;
+        padding-left: 20px !important;
+        border-radius: 8px;
+        height: 44px;
+        line-height: 44px;
+        transition: all 0.3s;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: #fff;
+        }
+
+        .anticon {
+          font-size: 18px;
+        }
+      }
+
+      .ant-menu-item-selected {
+        background: linear-gradient(90deg, #3182ce 0%, #2c5282 100%) !important;
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(49, 130, 206, 0.4);
+
+        &::after {
+          display: none;
+        }
+      }
     }
   }
 }

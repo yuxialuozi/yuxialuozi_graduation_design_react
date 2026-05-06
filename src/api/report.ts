@@ -1,5 +1,4 @@
 import { http } from '@/utils/request'
-import type { Tenant, Contract, Room, Fee, Maintenance } from '@/types'
 
 // 报表查询参数
 export interface ReportQueryParams {

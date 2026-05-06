@@ -53,3 +53,17 @@ export function updateContract(id: number, data: ContractFormData) {
 export function deleteContract(id: number) {
   return http.delete<void>(`/contracts/${id}`)
 }
+
+/**
+ * 激活合同（draft → active）
+ */
+export function activateContract(id: number) {
+  return http.post<void>(`/contracts/${id}/activate`)
+}
+
+/**
+ * 终止合同
+ */
+export function terminateContract(id: number) {
+  return http.post<void>(`/contracts/${id}/terminate`)
+}

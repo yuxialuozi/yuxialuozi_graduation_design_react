@@ -15,9 +15,16 @@ const adminQuickActions = [
 const AI = () => {
   return (
     <div className="ai-page">
+      <div className="page-header">
+        <div className="page-title">
+          <h2>AI 智能助手</h2>
+          <p>基于智谱 AI 大模型，智能分析业务数据</p>
+        </div>
+      </div>
+
       <Row gutter={24}>
         <Col xs={24} lg={16}>
-          <Card title="AI 智能助手" className="ai-chat-card">
+          <Card bordered={false} className="ai-chat-card" title="AI 智能助手">
             <AIChat
               quickActions={adminQuickActions}
               title="管理端 AI 助手"
@@ -26,7 +33,7 @@ const AI = () => {
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card title="AI 功能说明" className="ai-info-card">
+          <Card bordered={false} className="ai-info-card">
             <div className="ai-feature">
               <h4>数据分析</h4>
               <p>基于历史数据，AI 可以帮您分析收入趋势、租户活跃度、费用构成等</p>
@@ -49,7 +56,7 @@ const AI = () => {
             </div>
           </Card>
 
-          <Card title="使用提示" className="ai-tips-card">
+          <Card bordered={false} className="ai-tips-card">
             <ul>
               <li>可以询问任意关于当前系统数据的问题</li>
               <li>试试点击"快捷问题"快速开始</li>

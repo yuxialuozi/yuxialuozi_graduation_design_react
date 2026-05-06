@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Table, Card, Button, Space, Input, Tag, Modal, Form, DatePicker, InputNumber, Select, message } from 'antd'
-import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, CheckOutlined } from '@ant-design/icons'
+import { Table, Card, Button, Space, Input, Tag, Modal, Form, DatePicker, InputNumber, Select, message, Popconfirm } from 'antd'
+import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import type { Fee } from '@/types'
+import type { Fee, Tenant } from '@/types'
 import { formatMoney } from '@/utils'
-import { getFeeList, createFee, updateFee, deleteFee, payFee, type FeeFormData, type FeeQueryParams, type PayFeeData } from '@/api'
+import { getFeeList, createFee, updateFee, deleteFee, payFee, getTenantList, type FeeFormData, type FeeQueryParams, type PayFeeData } from '@/api'
 import dayjs from 'dayjs'
 import './index.less'
 
@@ -12,19 +12,32 @@ const FeeList = () => {
   const [loading, setLoading] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
-  const [searchTenantId, setSearchTenantId] = useState<number>()
   const [searchRoomNo, setSearchRoomNo] = useState('')
   const [searchFeeType, setSearchFeeType] = useState('')
   const [searchStatus, setSearchStatus] = useState('')
-  const [searchPeriod, setSearchPeriod] = useState('')
   const [data, setData] = useState<Fee[]>([])
   const [total, setTotal] = useState(0)
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 })
+  const [tenants, setTenants] = useState<Tenant[]>([])
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [form] = Form.useForm()
 
   useEffect(() => {
     fetchData()
-  }, [pagination.current, pagination.pageSize, searchTenantId, searchRoomNo, searchFeeType, searchStatus, searchPeriod])
+    loadTenants()
+  }, [pagination.current, pagination.pageSize, searchRoomNo, searchFeeType, searchStatus])
+
+  const loadTenants = async () => {
+    try {
+      const result = await getTenantList({ page: 1, pageSize: 100 })
+      setTenants(result.list)
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '加载租户列表失败')
+      }
+    }
+  }
 
   const fetchData = async () => {
     try {
@@ -33,11 +46,9 @@ const FeeList = () => {
         page: pagination.current,
         pageSize: pagination.pageSize,
       }
-      if (searchTenantId) params.tenantId = searchTenantId
       if (searchRoomNo) params.roomNo = searchRoomNo
       if (searchFeeType) params.feeType = searchFeeType
       if (searchStatus) params.status = searchStatus
-      if (searchPeriod) params.period = searchPeriod
 
       const result = await getFeeList(params)
       setData(result.list)
@@ -102,19 +113,37 @@ const FeeList = () => {
     {
       title: '操作',
       key: 'action',
+      width: 200,
       render: (_, record) => (
         <Space>
           {record.status !== 'paid' && (
-            <Button type="link" icon={<CheckOutlined />} onClick={() => handlePay(record)}>
-              确认缴费
-            </Button>
+            <Popconfirm
+              title="确认缴费"
+              description={`确认租户 "${record.tenantName}" 已缴纳 ${formatMoney(record.amount)} 吗？`}
+              onConfirm={() => handlePay(record)}
+              okText="确认"
+              cancelText="取消"
+            >
+              <Button type="link" icon={<CheckOutlined />} className="action-btn">
+                确认缴费
+              </Button>
+            </Popconfirm>
           )}
-          <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
+          <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record)} className="action-btn">
             编辑
           </Button>
-          <Button type="link" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)}>
-            删除
-          </Button>
+          <Popconfirm
+            title="确认删除"
+            description="确定要删除该费用记录吗？"
+            onConfirm={() => handleDelete(record)}
+            okText="删除"
+            cancelText="取消"
+            okButtonProps={{ danger: true }}
+          >
+            <Button type="link" danger icon={<DeleteOutlined />} className="action-btn">
+              删除
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -136,42 +165,60 @@ const FeeList = () => {
     setModalVisible(true)
   }
 
-  const handleDelete = (record: Fee) => {
-    Modal.confirm({
-      title: '确认删除',
-      content: `确定要删除该费用记录吗？`,
-      onOk: async () => {
-        try {
-          await deleteFee(record.id)
-          message.success('删除成功')
-          fetchData()
-        } catch (error: unknown) {
-          const err = error as Error
-          if (err.name !== 'ApiError' && err.name !== 'HttpError') {
-            message.error(err.message || '删除失败')
-          }
-        }
-      },
-    })
+  const handleDelete = async (record: Fee) => {
+    try {
+      await deleteFee(record.id)
+      message.success('删除成功')
+      fetchData()
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '删除失败')
+      }
+    }
   }
 
-  const handlePay = (record: Fee) => {
+  const handlePay = async (record: Fee) => {
+    try {
+      const payData: PayFeeData = {
+        paidDate: dayjs().toISOString(),
+      }
+      await payFee(record.id, payData)
+      message.success('缴费确认成功')
+      fetchData()
+    } catch (error: unknown) {
+      const err = error as Error
+      if (err.name !== 'ApiError' && err.name !== 'HttpError') {
+        message.error(err.message || '缴费确认失败')
+      }
+    }
+  }
+
+  const handleBatchPay = () => {
+    const unpaidItems = data.filter(item => selectedRowKeys.includes(item.id) && item.status !== 'paid')
+    if (unpaidItems.length === 0) {
+      message.warning('请选择未缴费的记录')
+      return
+    }
     Modal.confirm({
-      title: '确认缴费',
-      content: `确认租户 "${record.tenantName}" 已缴纳 ${formatMoney(record.amount)} 的${feeTypeMap[record.feeType]?.text}？`,
+      title: '批量确认缴费',
+      content: `确定要确认选中的 ${unpaidItems.length} 条未缴费记录吗？`,
+      okText: '确认',
       onOk: async () => {
         try {
-          const payData: PayFeeData = {
-            paidDate: dayjs().toISOString(),
-          }
-          await payFee(record.id, payData)
-          message.success('缴费确认成功')
+          setLoading(true)
+          const payData: PayFeeData = { paidDate: dayjs().toISOString() }
+          await Promise.all(unpaidItems.map(item => payFee(item.id, payData)))
+          message.success('批量确认缴费成功')
+          setSelectedRowKeys([])
           fetchData()
         } catch (error: unknown) {
           const err = error as Error
           if (err.name !== 'ApiError' && err.name !== 'HttpError') {
-            message.error(err.message || '缴费确认失败')
+            message.error(err.message || '批量确认失败')
           }
+        } finally {
+          setLoading(false)
         }
       },
     })
@@ -184,7 +231,7 @@ const FeeList = () => {
         const { dueDate, ...rest } = values
         const formData: FeeFormData = {
           ...rest,
-          tenantId: values.tenantId || 1,
+          tenantId: values.tenantId,
           dueDate: dueDate ? dueDate.format('YYYY-MM-DDTHH:mm:ss') : '',
         }
 
@@ -219,69 +266,83 @@ const FeeList = () => {
   }
 
   return (
-    <Card
-      title="费用列表"
-      extra={
-        <Space>
-          <Select placeholder="费用类型" allowClear style={{ width: 120 }} onChange={(value) => { setSearchFeeType(value || '') }}>
-            <Select.Option value="rent">租金</Select.Option>
-            <Select.Option value="water">水费</Select.Option>
-            <Select.Option value="electricity">电费</Select.Option>
-            <Select.Option value="property">物业费</Select.Option>
-          </Select>
-          <Select placeholder="缴费状态" allowClear style={{ width: 120 }} onChange={(value) => { setSearchStatus(value || '') }}>
-            <Select.Option value="unpaid">待缴费</Select.Option>
-            <Select.Option value="paid">已缴费</Select.Option>
-            <Select.Option value="overdue">已逾期</Select.Option>
-          </Select>
-          <Input
-            placeholder="搜索房间号"
-            allowClear
-            style={{ width: 120 }}
-            onChange={(e) => setSearchRoomNo(e.target.value)}
-          />
+    <div className="fee-list">
+      <div className="page-header">
+        <div className="page-title">
+          <h2>费用管理</h2>
+          <p>管理所有费用记录，包括租金、水电费、物业费等</p>
+        </div>
+      </div>
+
+      <Card bordered={false} className="content-card">
+        <div className="search-bar">
+          <Space>
+            <Select placeholder="费用类型" allowClear style={{ width: 120 }} onChange={(value) => { setSearchFeeType(value || ''); setPagination({ ...pagination, current: 1 }) }}>
+              <Select.Option value="rent">租金</Select.Option>
+              <Select.Option value="water">水费</Select.Option>
+              <Select.Option value="electricity">电费</Select.Option>
+              <Select.Option value="property">物业费</Select.Option>
+            </Select>
+            <Select placeholder="缴费状态" allowClear style={{ width: 120 }} onChange={(value) => { setSearchStatus(value || ''); setPagination({ ...pagination, current: 1 }) }}>
+              <Select.Option value="unpaid">待缴费</Select.Option>
+              <Select.Option value="paid">已缴费</Select.Option>
+              <Select.Option value="overdue">已逾期</Select.Option>
+            </Select>
+            <Input
+              placeholder="搜索房间号"
+              allowClear
+              style={{ width: 150 }}
+              onChange={(e) => { setSearchRoomNo(e.target.value); setPagination({ ...pagination, current: 1 }) }}
+            />
+            {selectedRowKeys.length > 0 && (
+              <Button icon={<CheckOutlined />} onClick={handleBatchPay}>
+                批量确认缴费({selectedRowKeys.length})
+              </Button>
+            )}
+          </Space>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
             新增费用
           </Button>
-        </Space>
-      }
-    >
-      <Table
-        columns={columns}
-        dataSource={data}
-        rowKey="id"
-        loading={loading}
-        onChange={handleTableChange}
-        pagination={{
-          current: pagination.current,
-          pageSize: pagination.pageSize,
-          total,
-          showTotal: (totalCount) => `共 ${totalCount} 条`,
-          showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50'],
-        }}
-        summary={(pageData) => {
-          const totalAmount = pageData.reduce((sum, item) => sum + item.amount, 0)
-          const unpaidAmount = pageData.filter(item => item.status !== 'paid').reduce((sum, item) => sum + item.amount, 0)
-          return (
-            <Table.Summary fixed>
-              <Table.Summary.Row>
-                <Table.Summary.Cell index={0} colSpan={3}>合计</Table.Summary.Cell>
-                <Table.Summary.Cell index={1}>
-                  <strong>{formatMoney(totalAmount)}</strong>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={2} colSpan={3}>
-                  待收: <strong style={{ color: '#ff4d4f' }}>{formatMoney(unpaidAmount)}</strong>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={3} colSpan={2} />
-              </Table.Summary.Row>
-            </Table.Summary>
-          )
-        }}
-      />
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey="id"
+          loading={loading}
+          onChange={handleTableChange}
+          rowSelection={{ selectedRowKeys, onChange: (keys) => setSelectedRowKeys(keys) }}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total,
+            showTotal: (totalCount) => `共 ${totalCount} 条`,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50'],
+          }}
+          summary={(pageData) => {
+            const totalAmount = pageData.reduce((sum, item) => sum + item.amount, 0)
+            const unpaidAmount = pageData.filter(item => item.status !== 'paid').reduce((sum, item) => sum + item.amount, 0)
+            return (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0} colSpan={3}>合计</Table.Summary.Cell>
+                  <Table.Summary.Cell index={1}>
+                    <strong>{formatMoney(totalAmount)}</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={2} colSpan={3}>
+                    待收: <strong style={{ color: '#ff4d4f' }}>{formatMoney(unpaidAmount)}</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={3} colSpan={2} />
+                </Table.Summary.Row>
+              </Table.Summary>
+            )
+          }}
+        />
+      </Card>
 
       <Modal
-        title="费用信息"
+        title={editingId ? '编辑费用' : '新增费用'}
         open={modalVisible}
         onOk={handleModalOk}
         onCancel={() => setModalVisible(false)}
@@ -290,10 +351,18 @@ const FeeList = () => {
         <Form form={form} layout="vertical">
           <Form.Item
             name="tenantId"
-            label="租户ID"
-            rules={[{ required: true, message: '请输入租户ID' }]}
+            label="租户"
+            rules={[{ required: true, message: '请选择租户' }]}
           >
-            <InputNumber style={{ width: '100%' }} placeholder="请输入租户ID" min={1} />
+            <Select placeholder="请选择租户" showSearch filterOption={(input, option) =>
+              (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+            }>
+              {tenants.map((tenant) => (
+                <Select.Option key={tenant.id} value={tenant.id}>
+                  {tenant.name} ({tenant.contactPerson})
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item name="roomNo" label="房间号">
             <Input placeholder="请输入房间号" />
@@ -340,7 +409,7 @@ const FeeList = () => {
           </Form.Item>
         </Form>
       </Modal>
-    </Card>
+    </div>
   )
 }
 

@@ -1,6 +1,19 @@
 .user-profile {
-  h2 {
+  .page-header {
     margin-bottom: 24px;
+
+    h2 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a365d;
+      margin: 0 0 4px;
+    }
+
+    p {
+      color: #718096;
+      margin: 0;
+      font-size: 14px;
+    }
   }
 
   .loading-container {
@@ -11,14 +24,101 @@
   }
 
   .profile-card {
-    margin-bottom: 16px;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+
+    :global {
+      .ant-card-head {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 16px 20px;
+
+        .ant-card-head-title {
+          font-size: 15px;
+          font-weight: 600;
+          color: #1a365d;
+        }
+      }
+
+      .ant-card-body {
+        padding: 20px;
+      }
+
+      .ant-descriptions-item-label {
+        color: #5a6c7d;
+        font-weight: 500;
+      }
+
+      .ant-descriptions-item-content {
+        color: #1a365d;
+      }
+    }
   }
 
-  .stats-row {
-    margin-bottom: 16px;
+  .stat-card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
 
-    .stat-card {
-      text-align: center;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    :global {
+      .ant-card-body {
+        padding: 20px;
+        text-align: center;
+      }
+    }
+
+    .stat-title {
+      font-size: 13px;
+      color: #718096;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+  }
+
+  :global {
+    .ant-btn-primary {
+      background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+      border: none;
+      box-shadow: 0 2px 8px rgba(49, 130, 206, 0.3);
+
+      &:hover {
+        background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+        transform: translateY(-1px);
+      }
+    }
+
+    .ant-modal {
+      .ant-modal-header {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 20px 24px;
+
+        .ant-modal-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #1a365d;
+        }
+      }
+
+      .ant-modal-body {
+        padding: 24px;
+      }
+    }
+
+    .ant-form-item-label > label {
+      color: #1a365d;
+      font-weight: 500;
     }
   }
 }

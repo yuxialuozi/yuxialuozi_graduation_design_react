@@ -64,3 +64,17 @@ export function deleteRoom(id: number) {
 export function assignTenant(id: number, data: AssignTenantData) {
   return http.post<Room>(`/rooms/${id}/assign`, data)
 }
+
+/**
+ * 释放房间（取消租户关联）
+ */
+export function unassignRoom(id: number) {
+  return http.post<void>(`/rooms/${id}/unassign`)
+}
+
+/**
+ * 获取楼栋列表
+ */
+export function getBuildings() {
+  return http.get<string[]>('/rooms/buildings')
+}

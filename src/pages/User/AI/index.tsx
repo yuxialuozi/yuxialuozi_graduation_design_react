@@ -15,9 +15,14 @@ const tenantQuickActions = [
 const UserAI = () => {
   return (
     <div className="user-ai-page">
+      <div className="page-header">
+        <h2>AI 助手</h2>
+        <p>智能解答您的租房相关问题</p>
+      </div>
+
       <Row gutter={24}>
         <Col xs={24} lg={16}>
-          <Card title="AI 助手" className="ai-chat-card">
+          <Card bordered={false} className="ai-chat-card" title="AI 助手">
             <AIChat
               quickActions={tenantQuickActions}
               title="租户端 AI 助手"
@@ -26,7 +31,7 @@ const UserAI = () => {
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card title="我能帮您" className="ai-info-card">
+          <Card bordered={false} className="ai-info-card">
             <div className="ai-feature">
               <h4>费用咨询</h4>
               <p>解答关于租金、水电费、物业费等各项费用的计算和缴纳问题</p>
@@ -49,7 +54,7 @@ const UserAI = () => {
             </div>
           </Card>
 
-          <Card title="使用提示" className="ai-tips-card">
+          <Card bordered={false} className="ai-tips-card">
             <ul>
               <li>可以询问任意关于您的租房相关问题</li>
               <li>试试点击快捷问题快速获取答案</li>

@@ -13,7 +13,7 @@ const UserMaintenance = () => {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [statusFilter, setStatusFilter] = useState<string>('')
+  const [statusFilter] = useState<string>('')
   const [submitLoading, setSubmitLoading] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
   const [form] = Form.useForm()
@@ -48,7 +48,6 @@ const UserMaintenance = () => {
       form.resetFields()
       fetchMaintenance()
     } catch (error: unknown) {
-      // 表单验证错误由 Ant Design Form 处理，不显示重复消息
       if (error && typeof error === 'object' && 'errorFields' in error) {
         return
       }
@@ -144,9 +143,14 @@ const UserMaintenance = () => {
 
   return (
     <div className="user-maintenance">
-      <h2>维修工单</h2>
+      <div className="page-header">
+        <h2>维修工单</h2>
+        <p>查看您的维修申请记录和状态</p>
+      </div>
 
       <Card
+        bordered={false}
+        className="content-card"
         extra={
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}>
             提交维修

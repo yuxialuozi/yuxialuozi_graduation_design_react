@@ -3,12 +3,14 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import {
   DashboardOutlined,
   UserOutlined,
+  TeamOutlined,
   FileTextOutlined,
   HomeOutlined,
   DollarOutlined,
   ToolOutlined,
   BarChartOutlined,
   RobotOutlined,
+  SettingOutlined,
 } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
 import { useAppStore } from '@/store'
@@ -23,6 +25,14 @@ const menuItems: MenuItem[] = [
     key: '/dashboard',
     icon: <DashboardOutlined />,
     label: '仪表盘',
+  },
+  {
+    key: '/users',
+    icon: <TeamOutlined />,
+    label: '用户管理',
+    children: [
+      { key: '/users/list', label: '用户列表' },
+    ],
   },
   {
     key: '/tenant',
@@ -73,6 +83,11 @@ const menuItems: MenuItem[] = [
     key: '/ai',
     icon: <RobotOutlined />,
     label: 'AI 助手',
+  },
+  {
+    key: '/profile',
+    icon: <SettingOutlined />,
+    label: '个人中心',
   },
 ]
 

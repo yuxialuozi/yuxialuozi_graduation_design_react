@@ -78,3 +78,17 @@ export function assignMaintenance(id: number, data: AssignMaintenanceData) {
 export function completeMaintenance(id: number, data?: CompleteMaintenanceData) {
   return http.post<Maintenance>(`/maintenance/${id}/complete`, data)
 }
+
+/**
+ * 取消维修工单
+ */
+export function cancelMaintenance(id: number) {
+  return http.post<void>(`/maintenance/${id}/cancel`)
+}
+
+/**
+ * 获取维修人员列表
+ */
+export function getMaintenanceStaff() {
+  return http.get<string[]>('/maintenance/staff')
+}

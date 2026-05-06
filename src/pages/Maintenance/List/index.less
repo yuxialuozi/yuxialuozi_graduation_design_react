@@ -1,106 +1,131 @@
-// 维修列表页面样式
 .maintenance-list {
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
 
-  .ant-table {
-    .ant-table-tbody {
-      .ant-table-row {
-        cursor: pointer;
+    .page-title {
+      h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1a365d;
+        margin: 0 0 4px;
+      }
 
-        &:hover {
-          background-color: #f5f5f5;
+      p {
+        color: #718096;
+        margin: 0;
+        font-size: 14px;
+      }
+    }
+  }
+
+  .content-card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    :global {
+      .ant-card-head {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 20px 24px;
+
+        .ant-card-head-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1a365d;
         }
       }
-    }
-  }
 
-  .ant-modal {
-    .ant-modal-body {
-      .ant-form {
-        margin-top: 20px;
+      .ant-card-body {
+        padding: 0;
+      }
+
+      .ant-table {
+        .ant-table-thead > tr > th {
+          background: #f8fafc;
+          color: #5a6c7d;
+          font-weight: 600;
+          font-size: 13px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+
+        .ant-table-tbody > tr > td {
+          color: #1a365d;
+          padding: 16px 24px;
+        }
+
+        .ant-table-tbody > tr:hover > td {
+          background: #f8fafc;
+        }
+      }
+
+      .ant-pagination {
+        padding: 16px 24px;
+        margin: 0;
+      }
+    }
+
+    .search-bar {
+      padding: 20px 24px;
+      background: #f8fafc;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      transition: all 0.3s;
+
+      &:hover {
+        transform: translateY(-1px);
       }
     }
   }
 
-  .status-tag {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+  :global {
+    .ant-modal {
+      .ant-modal-header {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 20px 24px;
 
-    &.pending {
-      background-color: #fff7e6;
-      color: #faad14;
-      border: 1px solid #ffe58f;
+        .ant-modal-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #1a365d;
+        }
+      }
+
+      .ant-modal-body {
+        padding: 24px;
+      }
+
+      .ant-modal-footer {
+        border-top: 1px solid #f0f0f0;
+        padding: 16px 24px;
+      }
     }
 
-    &.processing {
-      background-color: #e6f7ff;
-      color: #1890ff;
-      border: 1px solid #91d5ff;
+    .ant-form-item-label > label {
+      color: #1a365d;
+      font-weight: 500;
     }
 
-    &.completed {
-      background-color: #f6ffed;
-      color: #52c41a;
-      border: 1px solid #b7eb8f;
+    .ant-btn-primary {
+      background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+      border: none;
+      box-shadow: 0 2px 8px rgba(49, 130, 206, 0.3);
+
+      &:hover {
+        background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+        transform: translateY(-1px);
+      }
     }
-
-    &.cancelled {
-      background-color: #f0f0f0;
-      color: #999;
-      border: 1px solid #d9d9d9;
-    }
-  }
-
-  .priority-tag {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-
-    &.low {
-      background-color: #f6ffed;
-      color: #52c41a;
-      border: 1px solid #b7eb8f;
-    }
-
-    &.medium {
-      background-color: #e6f7ff;
-      color: #1890ff;
-      border: 1px solid #91d5ff;
-    }
-
-    &.high {
-      background-color: #fff7e6;
-      color: #faad14;
-      border: 1px solid #ffe58f;
-    }
-
-    &.urgent {
-      background-color: #fff2f0;
-      color: #ff4d4f;
-      border: 1px solid #ffccc7;
-    }
-  }
-
-  .ticket-number {
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    color: #1890ff;
-    font-weight: 500;
-  }
-
-  .type-tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    background-color: #f0f5ff;
-    color: #597ef7;
-  }
-
-  .assign-button {
-    margin-left: 8px;
-  }
-
-  .complete-button {
-    margin-left: 8px;
   }
 }
