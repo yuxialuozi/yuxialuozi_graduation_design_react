@@ -52,10 +52,10 @@ const Report = () => {
         }),
       ])
 
-      setIncomeData(income?.[0] || { byDay: [] })
-      setOccupancyData(occupancy?.[0] || { totalRooms: 0, occupancyRate: 0 })
+      setIncomeData(income || { byDay: [] })
+      setOccupancyData(occupancy || { totalRooms: 0, occupancyRate: 0 })
       setFeeCompositionData(feeComp || [])
-      setMaintenanceStatsData(maintenance?.[0] || { byStatus: [] })
+      setMaintenanceStatsData(maintenance || { byStatus: [] })
       setTenantRankingData(ranking || [])
     } catch (error: unknown) {
       const err = error as Error

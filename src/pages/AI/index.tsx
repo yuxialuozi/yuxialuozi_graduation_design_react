@@ -24,7 +24,21 @@ const AI = () => {
 
       <Row gutter={24}>
         <Col xs={24} lg={16}>
-          <Card bordered={false} className="ai-chat-card" title="AI 智能助手">
+          <Card
+            bordered={false}
+            className="ai-chat-card"
+            title="AI 智能助手"
+            style={{ display: 'flex', flexDirection: 'column' }}
+            styles={{
+              body: {
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                padding: 0,
+                overflow: 'hidden',
+              },
+            }}
+          >
             <AIChat
               quickActions={adminQuickActions}
               title="管理端 AI 助手"

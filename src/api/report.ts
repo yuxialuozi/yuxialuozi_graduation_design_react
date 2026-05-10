@@ -73,14 +73,14 @@ export interface DashboardData {
  * 获取收入报表
  */
 export function getIncomeReport(params?: ReportQueryParams) {
-  return http.get<IncomeReportData[]>('/reports/income', { params })
+  return http.get<IncomeReportData>('/reports/income', { params })
 }
 
 /**
  * 获取入住率报表
  */
 export function getOccupancyReport(params?: ReportQueryParams) {
-  return http.get<OccupancyReportData[]>('/reports/occupancy', { params })
+  return http.get<OccupancyReportData>('/reports/occupancy', { params })
 }
 
 /**
@@ -94,7 +94,7 @@ export function getFeeComposition(params?: ReportQueryParams) {
  * 获取维修统计报表
  */
 export function getMaintenanceStats(params?: ReportQueryParams) {
-  return http.get<MaintenanceStatsData[]>('/reports/maintenance/stats', { params })
+  return http.get<MaintenanceStatsData>('/reports/maintenance/stats', { params })
 }
 
 /**

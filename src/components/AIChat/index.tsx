@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Input, Button, Spin } from 'antd'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import {
   SendOutlined,
   RobotOutlined,
@@ -222,7 +224,13 @@ const AIChat = ({
               {msg.role === 'user' ? <UserOutlined /> : <RobotOutlined />}
             </div>
             <div className="message-content">
-              <div className="message-bubble">{msg.content}</div>
+              <div className={`message-bubble ${msg.role === 'assistant' ? 'markdown-body' : ''}`}>
+                {msg.role === 'assistant' ? (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                ) : (
+                  msg.content
+                )}
+              </div>
               <div className="message-time">{formatTime(msg.timestamp)}</div>
             </div>
           </div>
